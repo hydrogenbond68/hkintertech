@@ -21,7 +21,7 @@ const Cart = () => {
     const [cardCvv, setCardCvv] = useState('');
     const [cardName, setCardName] = useState('');
 
-    const TILL_NUMBER = '8379978';
+    const TILL_NUMBER = '3646096';
 
     useEffect(() => {
         console.log('Cart page rendered with items:', cartItems);

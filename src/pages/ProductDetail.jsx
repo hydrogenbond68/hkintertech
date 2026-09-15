@@ -160,9 +160,17 @@ const ProductDetail = () => {
             <div className="container-custom py-12 text-center">
                 <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Product</h2>
                 <p className="text-gray-600 mb-6">{error}</p>
-                <button onClick={() => window.location.reload()} className="btn-primary">
-                    Refresh Page
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onClick={() => fetchProductData()} className="btn-primary">
+                        Try Again
+                    </button>
+                    <button 
+                        onClick={() => navigate('/products')}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        Back to Products
+                    </button>
+                </div>
             </div>
         );
     }

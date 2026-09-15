@@ -143,6 +143,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     isAuthenticated: !!user,
+    hasToken: !!localStorage.getItem('access_token'),
     isAdmin: user?.is_admin || false,
     isVerified: user?.is_verified || false,
   };

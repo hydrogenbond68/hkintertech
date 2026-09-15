@@ -296,7 +296,7 @@ const Home = () => {
                 )}
 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -306,7 +306,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {featuredProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -330,7 +330,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -340,7 +340,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {trendingProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -364,7 +364,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -374,7 +374,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {newProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}

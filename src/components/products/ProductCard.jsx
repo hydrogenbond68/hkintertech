@@ -53,7 +53,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <div 
-            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 p-3 sm:p-4"
+            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 p-2 sm:p-3 lg:p-4"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
                     <img
                         src={isHovered && secondImage !== firstImage ? secondImage : firstImage}
                         alt={product.name}
-                        className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-32 sm:h-40 md:h-48 lg:h-44 xl:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                             e.target.src = '/api/placeholder/400/400';
                         }}
@@ -81,11 +81,11 @@ const ProductCard = ({ product }) => {
                     )}
                     
                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors">
-                            <Heart className="w-4 h-4 text-gray-600 hover:text-harykims-600" />
+                        <button className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors">
+                            <Heart className="w-3.5 h-3.5 text-gray-600 hover:text-harykims-600" />
                         </button>
-                        <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors">
-                            <Eye className="w-4 h-4 text-gray-600" />
+                        <button className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors">
+                            <Eye className="w-3.5 h-3.5 text-gray-600" />
                         </button>
                     </div>
                     
@@ -102,16 +102,16 @@ const ProductCard = ({ product }) => {
                     
                     <div className="flex items-center mt-1 hidden md:block">
                         <div className="flex items-center">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <span className="text-sm ml-1 font-medium">{product.average_rating || 0}</span>
+                            <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
+                            <span className="text-xs sm:text-sm ml-1 font-medium">{product.average_rating || 0}</span>
                         </div>
-                        <span className="text-sm text-gray-500 ml-2">
+                        <span className="text-xs sm:text-sm text-gray-500 ml-2">
                             ({product.total_reviews || 0})
                         </span>
                     </div>
                     
                     <div className="mt-2">
-                        <span className="text-sm sm:text-base md:text-xl font-bold text-harykims-600">
+                        <span className="text-sm sm:text-base md:text-lg font-bold text-harykims-600">
                             {formatPrice(product.price)}
                         </span>
                         {discount > 10 && (
@@ -131,7 +131,7 @@ const ProductCard = ({ product }) => {
                     <button
                         onClick={handleAddToCart}
                         disabled={product.stock_quantity === 0}
-                        className={`w-full mt-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm font-medium ${
+                        className={`w-full mt-2 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center text-xs sm:text-sm font-medium ${
                             added 
                                 ? 'bg-harykims-600 text-white' 
                                 : product.stock_quantity === 0
@@ -141,14 +141,14 @@ const ProductCard = ({ product }) => {
                     >
                         {added ? (
                             <>
-                                <Check className="w-4 h-4 mr-0 sm:mr-2" />
+                                <Check className="w-3.5 h-3.5 mr-0 sm:mr-2" />
                                 <span className="hidden sm:inline">Added!</span>
                             </>
                         ) : product.stock_quantity === 0 ? (
                             'Out of Stock'
                         ) : (
                             <>
-                                <ShoppingCart className="w-4 h-4 mr-0 sm:mr-2" />
+                                <ShoppingCart className="w-3.5 h-3.5 mr-0 sm:mr-2" />
                                 <span className="hidden sm:inline">Add to Cart</span>
                             </>
                         )}

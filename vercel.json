@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!api|admin).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
