@@ -42,14 +42,14 @@ const Contact = () => {
         {
             icon: Phone,
             title: 'Phone',
-            details: ['+254 714 818 100', '+254 118 477 340'],
+            details: ['+254714818100', '+254118477340'],
             color: 'bg-blue-50',
             iconColor: 'text-blue-600'
         },
         {
             icon: Mail,
             title: 'Email',
-            details: ['harykimsintertech.com', 'hkintertech22@gmail.com'],
+            details: ['harykimsintertech@gmail.com', 'hkcyber20@gmail.com'],
             color: 'bg-green-50',
             iconColor: 'text-green-600'
         },

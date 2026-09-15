@@ -48,7 +48,7 @@ const Login = () => {
                 {/* Logo */}
                 <div className="flex justify-center">
                     <img 
-                        src="/logo.jpeg" 
+                        src="src/assets/logo.jpeg" 
                         alt="Harykims Intertech" 
                         className="h-20 w-auto object-contain"
                         onError={(e) => {
@@ -82,18 +82,6 @@ const Login = () => {
                 )}
 
                 {/* Admin Quick Login */}
-                <div className="bg-harykims-50 border border-harykims-200 rounded-lg p-3">
-                    <p className="text-xs text-harykims-700 text-center">
-                        <span className="font-semibold">Admin Quick Login:</span>
-                        <button 
-                            onClick={fillAdminCredentials}
-                            className="ml-2 text-harykims-600 hover:text-harykims-800 underline font-medium"
-                        >
-                            Click to fill admin credentials
-                        </button>
-                    </p>
-                </div>
-
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -106,7 +94,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="input-field pl-10"
-                                placeholder="harykimsintertech@gmail.com"
+                                placeholder="h***********.com"
                                 required
                             />
                         </div>

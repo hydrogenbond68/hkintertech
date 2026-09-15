@@ -53,7 +53,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <div 
-            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100"
+            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 p-3 sm:p-4"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
                     <img
                         src={isHovered && secondImage !== firstImage ? secondImage : firstImage}
                         alt={product.name}
-                        className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                             e.target.src = '/api/placeholder/400/400';
                         }}
@@ -75,7 +75,7 @@ const ProductCard = ({ product }) => {
                     )}
                     
                     {images.length > 1 && (
-                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded hidden md:block">
                             {images.length} photos
                         </span>
                     )}
@@ -89,18 +89,18 @@ const ProductCard = ({ product }) => {
                         </button>
                     </div>
                     
-                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-harykims-600/90 text-white text-xs px-2 py-1 rounded">
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-harykims-600/90 text-white text-xs px-2 py-1 rounded hidden md:flex">
                         <Check className="w-3 h-3" />
                         <span>Verified</span>
                     </div>
                 </div>
                 
-                <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 truncate text-sm md:text-base">
+                <div className="p-0">
+                    <h3 className="font-semibold text-gray-800 truncate text-xs sm:text-sm md:text-base">
                         {product.name}
                     </h3>
                     
-                    <div className="flex items-center mt-1">
+                    <div className="flex items-center mt-1 hidden md:block">
                         <div className="flex items-center">
                             <Star className="w-4 h-4 text-yellow-400 fill-current" />
                             <span className="text-sm ml-1 font-medium">{product.average_rating || 0}</span>
@@ -111,17 +111,17 @@ const ProductCard = ({ product }) => {
                     </div>
                     
                     <div className="mt-2">
-                        <span className="text-xl font-bold text-harykims-600">
+                        <span className="text-sm sm:text-base md:text-xl font-bold text-harykims-600">
                             {formatPrice(product.price)}
                         </span>
                         {discount > 10 && (
-                            <span className="text-sm text-gray-400 line-through ml-2">
+                            <span className="text-xs sm:text-sm text-gray-400 line-through ml-2 hidden sm:inline">
                                 {formatPrice(originalPrice)}
                             </span>
                         )}
                     </div>
                     
-                    <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
+                    <div className="flex items-center justify-between mt-1 text-xs text-gray-500 hidden md:flex">
                         <span>MOQ: {product.min_order_quantity || 1}</span>
                         <span className={product.stock_quantity > 0 ? 'text-harykims-600' : 'text-red-600'}>
                             {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
@@ -141,15 +141,15 @@ const ProductCard = ({ product }) => {
                     >
                         {added ? (
                             <>
-                                <Check className="w-4 h-4 mr-2" />
-                                Added!
+                                <Check className="w-4 h-4 mr-0 sm:mr-2" />
+                                <span className="hidden sm:inline">Added!</span>
                             </>
                         ) : product.stock_quantity === 0 ? (
                             'Out of Stock'
                         ) : (
                             <>
-                                <ShoppingCart className="w-4 h-4 mr-2" />
-                                Add to Cart
+                                <ShoppingCart className="w-4 h-4 mr-0 sm:mr-2" />
+                                <span className="hidden sm:inline">Add to Cart</span>
                             </>
                         )}
                     </button>

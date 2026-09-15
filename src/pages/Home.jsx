@@ -171,7 +171,7 @@ const Home = () => {
                                 <span className="text-harykims-200">Accessories</span> for Your Business
                             </h1>
                             <p className="text-lg text-harykims-100 mb-6 max-w-lg">
-                                Connect with verified suppliers and find the best products for your business needs in Kenya.
+                             Discover a trusted marketplace for high-quality technology products and accessories, connecting your business with reliable suppliers and carefully selected products across Kenya. Whether you’re sourcing for your office, retail business, institution, or growing enterprise, HK Intertech makes it easier to find the right products at competitive prices.
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/products" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors flex items-center">
@@ -296,7 +296,7 @@ const Home = () => {
                 )}
 
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -306,7 +306,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {featuredProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -330,7 +330,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -340,7 +340,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {trendingProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -364,7 +364,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
                                 <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
@@ -374,7 +374,7 @@ const Home = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                         {newProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
@@ -421,7 +421,8 @@ const Home = () => {
                                     <span className="text-gray-300">Intertech</span>
                                 </span>
                             </div>
-                            <p className="text-sm">Kenya's premier B2B marketplace for quality accessories and tech products.</p>
+                            <p className="text-sm">Kenya’s premier B2B technology marketplace, delivering quality accessories, 
+                                innovative tech products, and dependable solutions designed to power modern businesses.</p>
                             
                             {/* Social Media Icons in Footer */}
                             <div className="mt-4 flex space-x-3">
@@ -484,8 +485,8 @@ const Home = () => {
                         <div>
                             <h4 className="text-white font-semibold mb-3">Contact Info</h4>
                             <ul className="space-y-2 text-sm">
-                                <li>📞 +254 714 818 100 / +254118 477 340</li>
-                                <li>📧 harykimsintertech.com</li>
+                                <li>📞 +254714818100 / +254118477340</li>
+                                <li>📧 harykimsintertech@gmail.com</li>
                                 <li>📍 Nairobi, Kenya</li>
                                 <li className="flex items-center space-x-2 mt-2">
                                     <span className="bg-green-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
