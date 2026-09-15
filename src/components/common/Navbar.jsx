@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import logoImage from '../../assets/logo.jpeg';
 import { 
     Search, ShoppingCart, User, LogOut, LogIn, 
     UserPlus, Menu, X, ChevronDown, Package, 
@@ -37,7 +38,7 @@ const Navbar = () => {
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
                         <img 
-                            src="assets/logo.jpeg" 
+                            src={logoImage} 
                             alt="Harykims Intertech" 
                             className="h-10 w-auto object-contain block"
                             onError={(e) => {

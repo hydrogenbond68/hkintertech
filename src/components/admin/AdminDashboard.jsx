@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import logoImage from '../../assets/logo.jpeg';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCache } from '../../contexts/CacheContext';
 import apiService from '../../services/api';
 import { 
     Package, ShoppingBag, Users, Star, MessageCircle, 
@@ -11,6 +13,7 @@ import {
 
 const AdminDashboard = () => {
     const { user } = useAuth();
+    const { invalidateProducts } = useCache();
     const [activeTab, setActiveTab] = useState('overview');
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
@@ -98,6 +101,7 @@ const AdminDashboard = () => {
             try {
                 await apiService.deleteProduct(id);
                 await loadData();
+                invalidateProducts();
                 alert('Product deleted successfully!');
             } catch (error) {
                 console.error('Error deleting product:', error);
@@ -164,10 +168,12 @@ const AdminDashboard = () => {
             if (editingProduct) {
                 await apiService.updateProduct(editingProduct.id, data);
                 await loadData();
+                invalidateProducts();
                 alert('Product updated successfully!');
             } else {
                 await apiService.createProduct(data);
                 await loadData();
+                invalidateProducts();
                 alert('Product created successfully!');
             }
             resetForm();
@@ -229,6 +235,7 @@ const AdminDashboard = () => {
         try {
             await apiService.updateOrderStatus(orderId, status);
             await loadData();
+            invalidateOrders();
         } catch (error) {
             console.error('Error updating order:', error);
         }
@@ -247,6 +254,7 @@ const AdminDashboard = () => {
         try {
             await apiService.updateUserRole(userId, isAdmin);
             await loadData();
+            invalidateProducts();
             setShowUserModal(false);
             alert(`User role updated successfully!`);
         } catch (error) {
@@ -260,6 +268,7 @@ const AdminDashboard = () => {
             try {
                 await apiService.deleteUser(userId);
                 await loadData();
+                invalidateProducts();
                 alert('User deleted successfully!');
             } catch (error) {
                 console.error('Error deleting user:', error);
@@ -326,15 +335,15 @@ const AdminDashboard = () => {
         <div className="container-custom py-8">
             <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-4">
-                    <img 
-                        src="/logo.jpeg" 
-                        alt="Harykims Intertech" 
-                        className="h-12 w-auto object-contain"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                        }}
-                    />
+<img 
+                            src={logoImage} 
+                            alt="Harykims Intertech" 
+                            className="h-12 w-auto object-contain"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                            }}
+                        />
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
                         <p className="text-gray-600">Welcome back, {user?.first_name} {user?.last_name}</p>

@@ -10,13 +10,17 @@ const Cart = () => {
     const navigate = useNavigate();
     
     const [showCheckout, setShowCheckout] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('mpesa');
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [orderComplete, setOrderComplete] = useState(false);
+    const [cardNumber, setCardNumber] = useState('');
+    const [cardExpiry, setCardExpiry] = useState('');
+    const [cardCvv, setCardCvv] = useState('');
+    const [cardName, setCardName] = useState('');
 
-    // Till number for M-Pesa payments
     const TILL_NUMBER = '8379978';
 
     useEffect(() => {
@@ -62,20 +66,35 @@ const Cart = () => {
             return;
         }
 
+        setShowCheckout(false);
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentModalConfirm = async () => {
+        if (paymentMethod === 'card') {
+            if (!cardNumber || cardNumber.length < 12 || !cardExpiry || !cardCvv || !cardName) {
+                alert('Please fill in all card details');
+                return;
+            }
+        }
+
         setIsProcessing(true);
 
-        // Simulate payment processing
         setTimeout(() => {
             setPaymentSuccess(true);
             setIsProcessing(false);
             
-            // Show success message with M-Pesa instructions
             setTimeout(() => {
                 setOrderComplete(true);
                 clearCart();
-                setShowCheckout(false);
+                setShowPaymentModal(false);
             }, 3000);
         }, 2000);
+    };
+
+    const handleCardPaymentSubmit = (e) => {
+        e.preventDefault();
+        handlePaymentModalConfirm();
     };
 
     if (cartItems.length === 0 && !orderComplete) {
@@ -249,6 +268,141 @@ const Cart = () => {
                             </div>
                         )}
                     </form>
+                </div>
+            </div>
+        );
+    }
+
+    if (showPaymentModal) {
+        return (
+            <div className="container-custom py-8 max-w-lg mx-auto">
+                <div className="bg-white rounded-xl shadow-lg p-8">
+                    <button
+                        onClick={() => { setShowPaymentModal(false); setShowCheckout(true); }}
+                        className="text-gray-500 hover:text-gray-700 mb-6 flex items-center"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Checkout
+                    </button>
+
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Gateway</h2>
+                    <p className="text-gray-600 mb-6">Secure payment processed via MockPay Gateway</p>
+
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h3 className="font-semibold text-gray-700 mb-2">Order Summary</h3>
+                        <div className="flex justify-between">
+                            <span>Total Amount:</span>
+                            <span className="font-bold text-harykims-600">{formatPrice(totalPrice)}</span>
+                        </div>
+                        <div className="flex justify-between mt-1">
+                            <span>Payment Method:</span>
+                            <span className="font-medium capitalize">{paymentMethod === 'mpesa' ? 'M-Pesa' : 'Card'}</span>
+                        </div>
+                    </div>
+
+                    {paymentMethod === 'card' ? (
+                        <form onSubmit={handleCardPaymentSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+                                <input
+                                    type="text"
+                                    value={cardName}
+                                    onChange={(e) => setCardName(e.target.value)}
+                                    placeholder="Full name on card"
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                                <input
+                                    type="text"
+                                    value={cardNumber}
+                                    onChange={(e) => setCardNumber(e.target.value)}
+                                    placeholder="0000 0000 0000 0000"
+                                    className="input-field"
+                                    maxLength={19}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                                    <input
+                                        type="text"
+                                        value={cardExpiry}
+                                        onChange={(e) => setCardExpiry(e.target.value)}
+                                        placeholder="MM/YY"
+                                        className="input-field"
+                                        maxLength={5}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                    <input
+                                        type="text"
+                                        value={cardCvv}
+                                        onChange={(e) => setCardCvv(e.target.value)}
+                                        placeholder="123"
+                                        className="input-field"
+                                        maxLength={4}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isProcessing}
+                                className="w-full btn-primary py-3 text-lg flex items-center justify-center mt-4"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CreditCard className="w-5 h-5 mr-2" />
+                                        Confirm Payment {formatPrice(totalPrice)}
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 p-4 border rounded-lg">
+                                <div className="bg-harykims-100 p-3 rounded-full">
+                                    <Phone className="w-5 h-5 text-harykims-600" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-800">M-Pesa Payment</p>
+                                    <p className="text-sm text-gray-500">Pay to Till Number: <strong>{TILL_NUMBER}</strong></p>
+                                </div>
+                            </div>
+                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p className="text-sm text-yellow-800"><strong>Amount:</strong> {formatPrice(totalPrice)}</p>
+                                <p className="text-sm text-yellow-700 mt-1">You will be prompted to enter your M-Pesa PIN on your phone.</p>
+                            </div>
+                            <button
+                                onClick={handlePaymentModalConfirm}
+                                disabled={isProcessing}
+                                className="w-full btn-primary py-3 text-lg flex items-center justify-center"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CreditCard className="w-5 h-5 mr-2" />
+                                        Confirm M-Pesa Payment
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         );

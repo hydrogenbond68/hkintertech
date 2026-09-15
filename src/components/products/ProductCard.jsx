@@ -20,10 +20,14 @@ const ProductCard = ({ product }) => {
     };
 
     const getImages = () => {
-        if (product.image_urls && typeof product.image_urls === 'string') {
+        if (!product.image_urls) return [];
+        if (Array.isArray(product.image_urls)) {
+            return product.image_urls.filter(url => typeof url === 'string' && url.length > 0);
+        }
+        if (typeof product.image_urls === 'string') {
             try {
                 const images = JSON.parse(product.image_urls);
-                return Array.isArray(images) ? images : [];
+                return Array.isArray(images) ? images.filter(url => typeof url === 'string' && url.length > 0) : [];
             } catch {
                 return [];
             }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useCache } from '../contexts/CacheContext';
 import apiService from '../services/api';
 import { 
     Star, ShoppingCart, MessageCircle, ChevronLeft, 
@@ -13,10 +14,12 @@ const ProductDetail = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const { addToCart } = useCart();
+    const { productVersion } = useCache();
     
     const [product, setProduct] = useState(null);
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('details');
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
@@ -30,11 +33,12 @@ const ProductDetail = () => {
         if (isAuthenticated) {
             checkWishlist();
         }
-    }, [id]);
+    }, [id, productVersion]);
 
     const fetchProductData = async () => {
         try {
             setLoading(true);
+            setError(null);
             const [productData, reviewsData] = await Promise.all([
                 apiService.getProduct(id),
                 apiService.getProductReviews(id)
@@ -43,6 +47,7 @@ const ProductDetail = () => {
             setReviews(reviewsData.reviews || []);
         } catch (error) {
             console.error('Error fetching product:', error);
+            setError(error.message || 'Failed to load product');
         } finally {
             setLoading(false);
         }
@@ -146,6 +151,18 @@ const ProductDetail = () => {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-harykims-600"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container-custom py-12 text-center">
+                <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Product</h2>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <button onClick={() => window.location.reload()} className="btn-primary">
+                    Refresh Page
+                </button>
             </div>
         );
     }

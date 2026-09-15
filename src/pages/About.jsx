@@ -57,6 +57,11 @@ const About = () => {
             name: 'Charity Njoki',
             role: 'Customer Experience Lead',
             bio: 'Dedicated to ensuring every customer gets the best service possible.'
+        },
+        {
+            name: 'Mistaken',
+            role: 'Strategic Planning & Development',
+            bio: 'Developing Marketing Strategies: Creating comprehensive plans to achieve business objectives (e.g., increasing market share, entering new markets, or launching new products).'
         }
     ];
 

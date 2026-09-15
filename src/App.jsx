@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { CacheProvider } from './contexts/CacheContext';
 import Navbar from './components/common/Navbar';
 import WhatsAppButton from './components/common/WhatsAppButton';
 import Home from './pages/Home';
@@ -66,7 +67,8 @@ function App() {
     <ErrorBoundary>
       <Router>
         <AuthProvider>
-          <CartProvider>
+          <CacheProvider>
+            <CartProvider>
             <div className="min-h-screen bg-gray-50">
               <Navbar />
               <WhatsAppButton />
@@ -99,6 +101,7 @@ function App() {
               </Routes>
             </div>
           </CartProvider>
+          </CacheProvider>
         </AuthProvider>
       </Router>
     </ErrorBoundary>

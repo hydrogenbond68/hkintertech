@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../services/api';
+import logoImage from '../assets/logo.jpeg';
+import { useCache } from '../contexts/CacheContext';
 import ProductCard from '../components/products/ProductCard';
 import { 
     ArrowRight, Award, Truck, Shield, Headphones, 
@@ -22,10 +24,12 @@ const TikTokIcon = ({ className = "w-5 h-5" }) => (
 );
 
 const Home = () => {
+    const { productVersion } = useCache();
     const [featuredProducts, setFeaturedProducts] = useState([]);
     const [newProducts, setNewProducts] = useState([]);
     const [trendingProducts, setTrendingProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     const [lastUpdated, setLastUpdated] = useState(new Date());
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -33,6 +37,7 @@ const Home = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
+            setError(null);
             const [featuredData, newData, trendingData, categoriesData] = await Promise.all([
                 apiService.getProducts({ featured: true, per_page: 12 }),
                 apiService.getProducts({ sortBy: 'created_at', sortOrder: 'desc', per_page: 8 }),
@@ -47,6 +52,7 @@ const Home = () => {
             setLastUpdated(new Date());
         } catch (error) {
             console.error('Error fetching data:', error);
+            setError(error.message || 'Failed to load some products');
         } finally {
             setLoading(false);
             setIsRefreshing(false);
@@ -66,7 +72,7 @@ const Home = () => {
         }, 60000);
         
         return () => clearInterval(interval);
-    }, []);
+    }, [productVersion]);
 
     // Category icons mapping
     const categoryIcons = {
@@ -151,7 +157,7 @@ const Home = () => {
                             {/* Logo in Hero */}
                             <div className="mb-6">
                                 <img 
-                                    src="/logo.jpeg" 
+                                    src={logoImage} 
                                     alt="Harykims Intertech" 
                                     className="h-16 w-auto object-contain"
                                     onError={(e) => {
@@ -280,6 +286,15 @@ const Home = () => {
                     </Link>
                 </div>
                 
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-700 text-sm">{error}</p>
+                        <button onClick={refresh} className="text-harykims-600 hover:text-harykims-700 text-sm font-medium mt-2">
+                            Retry
+                        </button>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {[...Array(8)].map((_, i) => (
@@ -393,7 +408,7 @@ const Home = () => {
                         <div>
                             <div className="flex items-center space-x-3 mb-4">
                                 <img 
-                                    src="/logo.jpeg" 
+                                    src={logoImage} 
                                     alt="Harykims Intertech" 
                                     className="h-12 w-auto object-contain"
                                     onError={(e) => {

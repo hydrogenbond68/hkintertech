@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
@@ -11,110 +12,121 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const { user, isAuthenticated, isAdmin } = useAuth();
+  const [carts, setCarts] = useState({});
   const [totalItems, setTotalItems] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // Load cart from localStorage on mount
+  const roleKey = useMemo(() => {
+    if (!isAuthenticated) return 'guest';
+    return isAdmin ? 'admin' : 'user';
+  }, [isAuthenticated, isAdmin]);
+
+  const currentCart = useMemo(() => {
+    return carts[roleKey] || [];
+  }, [carts, roleKey]);
+
+  // Load carts from localStorage on mount
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('cart');
-      console.log('Loading cart from localStorage:', savedCart);
-      if (savedCart) {
-        const parsed = JSON.parse(savedCart);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          console.log('Cart loaded with items:', parsed);
-          setCartItems(parsed);
-        } else {
-          console.log('Cart is empty');
-          setCartItems([]);
+      const savedCarts = localStorage.getItem('carts');
+      if (savedCarts) {
+        const parsed = JSON.parse(savedCarts);
+        if (parsed && typeof parsed === 'object') {
+          setCarts(parsed);
         }
       }
     } catch (e) {
-      console.error('Error loading cart:', e);
-      setCartItems([]);
+      console.error('Error loading carts:', e);
     }
   }, []);
 
-  // Save to localStorage and update totals
+  // Update totals whenever currentCart changes
   useEffect(() => {
     try {
-      console.log('Saving cart to localStorage:', cartItems);
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-      
-      const items = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-      const price = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
-      
+      const items = currentCart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+      const price = currentCart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
       setTotalItems(items);
       setTotalPrice(price);
     } catch (e) {
-      console.error('Error saving cart:', e);
+      console.error('Error calculating totals:', e);
     }
-  }, [cartItems]);
+  }, [currentCart]);
+
+  // Save carts to localStorage whenever carts change
+  useEffect(() => {
+    try {
+      localStorage.setItem('carts', JSON.stringify(carts));
+    } catch (e) {
+      console.error('Error saving carts:', e);
+    }
+  }, [carts]);
 
   const addToCart = (product, quantity = 1) => {
-    console.log('Adding to cart:', product, 'Quantity:', quantity);
-    
     if (!product || !product.id) {
-      console.error('Invalid product:', product);
       return;
     }
 
-    setCartItems(prev => {
-      const existingIndex = prev.findIndex(item => item.id === product.id);
-      
+    setCarts(prev => {
+      const existingItems = prev[roleKey] || [];
+      const existingIndex = existingItems.findIndex(item => item.id === product.id);
+
       if (existingIndex !== -1) {
-        // Update existing item
-        const updated = [...prev];
+        const updated = [...existingItems];
         updated[existingIndex] = {
           ...updated[existingIndex],
           quantity: (updated[existingIndex].quantity || 0) + quantity
         };
-        console.log('Updated existing item:', updated[existingIndex]);
-        return updated;
+        return { ...prev, [roleKey]: updated };
       } else {
-        // Add new item
-        const newItem = { 
-          ...product, 
+        const newItem = {
+          ...product,
           quantity: quantity,
           price: product.price || 0
         };
-        console.log('Added new item:', newItem);
-        return [...prev, newItem];
+        return { ...prev, [roleKey]: [...existingItems, newItem] };
       }
     });
   };
 
   const removeFromCart = (productId) => {
-    console.log('Removing from cart:', productId);
-    setCartItems(prev => {
-      const filtered = prev.filter(item => item.id !== productId);
-      console.log('Items after removal:', filtered);
-      return filtered;
+    setCarts(prev => {
+      const existingItems = prev[roleKey] || [];
+      const filtered = existingItems.filter(item => item.id !== productId);
+      return { ...prev, [roleKey]: filtered };
     });
   };
 
   const updateQuantity = (productId, quantity) => {
-    console.log('Updating quantity:', productId, quantity);
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCarts(prev => {
+      const existingItems = prev[roleKey] || [];
+      return {
+        ...prev,
+        [roleKey]: existingItems.map(item =>
+          item.id === productId ? { ...item, quantity } : item
+        )
+      };
+    });
   };
 
   const clearCart = () => {
-    console.log('Clearing cart');
-    setCartItems([]);
-    localStorage.removeItem('cart');
+    setCarts(prev => {
+      const { [roleKey]: _, ...rest } = prev;
+      try {
+        localStorage.setItem('carts', JSON.stringify(rest));
+      } catch (e) {
+        console.error('Error clearing cart:', e);
+      }
+      return rest;
+    });
   };
 
   const value = {
-    cartItems,
+    cartItems: currentCart,
     totalItems,
     totalPrice,
     addToCart,

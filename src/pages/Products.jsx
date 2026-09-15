@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiService from '../services/api';
+import { useCache } from '../contexts/CacheContext';
 import ProductCard from '../components/products/ProductCard';
 import { Filter, ChevronDown } from 'lucide-react';
 
 const Products = () => {
     const [searchParams] = useSearchParams();
+    const { productVersion } = useCache();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     const [filters, setFilters] = useState({
         category: searchParams.get('category') || '',
@@ -22,11 +25,12 @@ const Products = () => {
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-    }, [filters]);
+    }, [filters, productVersion]);
 
     const fetchProducts = async () => {
         try {
             setLoading(true);
+            setError(null);
             const params = {
                 ...filters,
                 min_price: filters.minPrice || undefined,
@@ -37,6 +41,7 @@ const Products = () => {
             setProducts(data.products || []);
         } catch (error) {
             console.error('Error fetching products:', error);
+            setError(error.message || 'Failed to load products');
         } finally {
             setLoading(false);
         }
@@ -211,6 +216,16 @@ const Products = () => {
                                     <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                                 </div>
                             ))}
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12">
+                            <p className="text-red-600 text-lg mb-2">{error}</p>
+                            <button
+                                onClick={fetchProducts}
+                                className="btn-primary inline-flex items-center"
+                            >
+                                Retry
+                            </button>
                         </div>
                     ) : products.length === 0 ? (
                         <div className="text-center py-12">
