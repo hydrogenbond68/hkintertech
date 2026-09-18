@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../services/api';
 import logoImage from '../assets/logo.jpeg';
+import heroImage from '../assets/hero-earbuds.jpg';
 import { useCache } from '../contexts/CacheContext';
 import ProductCard from '../components/products/ProductCard';
+import ProductGridSkeleton from '../components/common/ProductGridSkeleton';
 import { 
     ArrowRight, Award, Truck, Shield, Headphones, 
     TrendingUp, Clock, Star, ChevronRight, 
@@ -149,41 +151,60 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Hero Section - Green Gradient with Logo */}
-            <div className="bg-gradient-to-r from-harykims-700 to-harykims-500 text-white">
-                <div className="container-custom py-12 lg:py-16">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Hero Section - Oraimo Earbuds with Gradient Overlays */}
+            <div className="relative min-h-[640px] md:min-h-[720px] overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: `url(${heroImage})`,
+                        backgroundPosition: 'center 30%'
+                    }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-harykims-900/95 via-harykims-800/85 to-harykims-700/55" />
+                <div className="absolute inset-0 bg-gradient-to-t from-harykims-950/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(46,163,46,0.25),_transparent_60%)]" />
+
+                <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
+                    <span className="inline-flex items-center gap-2 bg-green-500/95 backdrop-blur-sm text-white text-xs md:text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-75 animate-ping"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                        </span>
+                        24-Hour Availability
+                    </span>
+                </div>
+
+                <div className="relative container-custom py-16 lg:py-24">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                         <div>
-                            {/* Logo in Hero */}
                             <div className="mb-6">
-                                <img 
-                                    src={logoImage} 
-                                    alt="Harykims Intertech" 
-                                    className="h-16 w-auto object-contain"
+                                <img
+                                    src={logoImage}
+                                    alt="Harykims Intertech"
+                                    className="h-16 w-auto object-contain drop-shadow-lg"
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.style.display = 'none';
                                     }}
                                 />
                             </div>
-                            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-                                Source Quality <br />
-                                <span className="text-harykims-200">Accessories</span> for Your Business
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-md">
+                                Premium Oraimo <br />
+                                <span className="text-harykims-200">Wireless Earbuds</span>
                             </h1>
-                            <p className="text-lg text-harykims-100 mb-6 max-w-lg">
-                             Discover a trusted marketplace for high-quality technology products and accessories, connecting your business with reliable suppliers and carefully selected products across Kenya. Whether you’re sourcing for your office, retail business, institution, or growing enterprise, HK Intertech makes it easier to find the right products at competitive prices.
+                            <p className="text-lg text-white/90 mb-6 max-w-lg drop-shadow">
+                                Stock Kenya's favourite Oraimo earbuds in bulk. Wholesale pricing, verified quality, and fast delivery to your shop or warehouse. Ideal for resellers, offices, and growing businesses.
                             </p>
                             <div className="flex flex-wrap gap-4">
-                                <Link to="/products" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors flex items-center">
-                                    Start Sourcing <ArrowRight className="w-5 h-5 ml-2" />
+                                <Link to="/products" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors flex items-center shadow-lg">
+                                    Source Earbuds Now <ArrowRight className="w-5 h-5 ml-2" />
                                 </Link>
-                                <Link to="/become-seller" className="bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/30 flex items-center">
+                                <Link to="/become-seller" className="bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/30 flex items-center backdrop-blur-sm">
                                     <Package className="w-5 h-5 mr-2" />
-                                    Sell Now
+                                    Sell on Harykims
                                 </Link>
                             </div>
 
-                            {/* Social Media Icons in Hero */}
                             <div className="mt-8 flex items-center space-x-4">
                                 <span className="text-white/70 text-sm">Follow us:</span>
                                 {socialLinks.map((social, index) => (
@@ -296,15 +317,7 @@ const Home = () => {
                 )}
 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-                        {[...Array(8)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                            </div>
-                        ))}
-                    </div>
+                    <ProductGridSkeleton count={8} />
                 ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {featuredProducts.map((product) => (
@@ -330,15 +343,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-                        {[...Array(8)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                            </div>
-                        ))}
-                    </div>
+                    <ProductGridSkeleton count={8} />
                 ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {trendingProducts.map((product) => (
@@ -364,15 +369,7 @@ const Home = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
-                        {[...Array(8)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                            </div>
-                        ))}
-                    </div>
+                    <ProductGridSkeleton count={8} />
                 ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
                         {newProducts.map((product) => (

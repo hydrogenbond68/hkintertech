@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { CacheProvider } from './contexts/CacheContext';
+import { SocketProvider } from './contexts/SocketContext';
 import Navbar from './components/common/Navbar';
 import WhatsAppButton from './components/common/WhatsAppButton';
 import Home from './pages/Home';
@@ -15,6 +16,9 @@ import Profile from './pages/Profile';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BecomeSeller from './pages/BecomeSeller';
+import Orders from './pages/Orders';
+import OrderTracking from './pages/OrderTracking';
+import Wishlist from './pages/Wishlist';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { useAuth } from './contexts/AuthContext';
 import ForgotPassword from './pages/ForgotPassword';
@@ -112,6 +116,7 @@ function App() {
         <AuthProvider>
           <CacheProvider>
             <CartProvider>
+              <SocketProvider>
             <div className="min-h-screen bg-gray-50">
               <Navbar />
               <WhatsAppButton />
@@ -124,6 +129,26 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/orders" element={
+                  <ProtectedRoute>
+                    <Orders />
+                  </ProtectedRoute>
+                } />
+                <Route path="/order/track/:id" element={
+                  <ProtectedRoute>
+                    <OrderTracking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/order/:id" element={
+                  <ProtectedRoute>
+                    <OrderTracking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/wishlist" element={
+                  <ProtectedRoute>
+                    <Wishlist />
+                  </ProtectedRoute>
+                } />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/profile" element={
@@ -143,6 +168,7 @@ function App() {
                 } />
               </Routes>
             </div>
+            </SocketProvider>
           </CartProvider>
           </CacheProvider>
         </AuthProvider>

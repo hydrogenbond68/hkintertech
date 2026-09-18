@@ -74,10 +74,10 @@ const Navbar = () => {
                     <div className="flex items-center space-x-4">
                         <div className="hidden md:flex items-center space-x-4">
                             <Link to="/about" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
-                                
+                                About
                             </Link>
                             <Link to="/contact" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
-                                
+                                Contact
                             </Link>
                         </div>
 
@@ -134,7 +134,7 @@ const Navbar = () => {
                                     </Link>
                                     <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
                                         <Mail className="w-4 h-4 mr-2 text-harykims-600" />
-                                        
+                                        Contact
                                     </Link>
                                     <button
                                         onClick={handleLogout}
@@ -191,11 +191,11 @@ const Navbar = () => {
                     <div className="container-custom py-3 space-y-2">
                         <Link to="/about" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                             <Info className="w-5 h-5 mr-3 text-harykims-600" />
-                            
+                            About
                         </Link>
                         <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                             <Mail className="w-5 h-5 mr-3 text-harykims-600" />
-                            
+                            Contact
                         </Link>
                         
                         <div className="border-t border-gray-100 my-2"></div>

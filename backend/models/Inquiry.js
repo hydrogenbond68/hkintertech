@@ -59,8 +59,8 @@ const inquirySchema = new mongoose.Schema({
   timestamps: true
 });
 
-inquirySchema.index({ user: 1, created_at: -1 });
-inquirySchema.index({ status: 1, created_at: -1 });
+inquirySchema.index({ user: 1, createdAt: -1 });
+inquirySchema.index({ status: 1, createdAt: -1 });
 
 const Inquiry = mongoose.model('Inquiry', inquirySchema);
 

@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import logoImage from '../../assets/logo.jpeg';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCache } from '../../contexts/CacheContext';
+import { useRealtimeOrders } from '../../hooks/useRealtimeOrders';
+import ProductGridSkeleton from '../common/ProductGridSkeleton';
+import MapView from '../common/MapView';
 import apiService from '../../services/api';
-import { 
-    Package, ShoppingBag, Users, Star, MessageCircle, 
+import {
+    Package, ShoppingBag, Users, Star, MessageCircle,
     Plus, Edit, Trash2, Eye, CheckCircle, XCircle,
     Clock, TrendingUp, DollarSign, BarChart3, Image, X, Upload, RefreshCw,
-    User, Mail, Phone, MapPin, Building, Filter, Search, Shield, 
-    UserCog, UserPlus, UserX, UserCheck
+    User, Mail, Phone, MapPin, Building, Filter, Search, Shield,
+    UserCog, UserPlus, UserX, UserCheck, MapIcon, Activity
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -16,7 +19,6 @@ const AdminDashboard = () => {
     const { invalidateProducts } = useCache();
     const [activeTab, setActiveTab] = useState('overview');
     const [products, setProducts] = useState([]);
-    const [orders, setOrders] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [inquiries, setInquiries] = useState([]);
     const [users, setUsers] = useState([]);
@@ -43,6 +45,8 @@ const AdminDashboard = () => {
         is_featured: false
     });
 
+    const { orders: realtimeOrders, setOrders: setRealtimeOrders, realtimeConnected } = useRealtimeOrders([]);
+
     // Load data function
     const loadData = useCallback(async () => {
         try {
@@ -52,49 +56,42 @@ const AdminDashboard = () => {
                 apiService.getOrders().catch(() => ({ orders: [] })),
                 apiService.getAllUsers().catch(() => ({ users: [] }))
             ]);
-            
+
             setProducts(productsData.products || []);
-            setOrders(ordersData.orders || []);
+            setRealtimeOrders(ordersData.orders || []);
             setUsers(usersData.users || []);
             setLastUpdated(new Date());
-            
+
             if (productsData.products) {
                 const uniqueCategories = [...new Set(productsData.products.map(p => p.category).filter(Boolean))];
                 setCategories(uniqueCategories);
             }
-            
+
             try {
                 const reviewsData = await apiService.getProductReviews(1);
                 setReviews(reviewsData.reviews || []);
             } catch {
                 setReviews([]);
             }
-            
+
             try {
                 const inquiriesData = await apiService.getUserInquiries();
                 setInquiries(inquiriesData.inquiries || []);
             } catch {
                 setInquiries([]);
             }
-            
+
         } catch (error) {
             console.error('Error loading admin data:', error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [setRealtimeOrders]);
 
     useEffect(() => {
         loadData();
     }, [loadData]);
 
-    // Auto-refresh every 30 seconds
-    useEffect(() => {
-        const interval = setInterval(() => {
-            loadData();
-        }, 30000);
-        return () => clearInterval(interval);
-    }, [loadData]);
 
     const handleDeleteProduct = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
@@ -319,11 +316,11 @@ const AdminDashboard = () => {
                (u.company_name && u.company_name.toLowerCase().includes(search));
     });
 
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const totalRevenue = realtimeOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    const pendingOrders = realtimeOrders.filter(o => o.status === 'pending').length;
     const totalProducts = products.length;
 
-    if (loading) {
+    if (loading && realtimeOrders.length === 0) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-harykims-600"></div>
@@ -359,7 +356,7 @@ const AdminDashboard = () => {
                         Refresh Data
                     </button>
                     <span className="text-sm text-gray-600">
-                        Last updated: {lastUpdated.toLocaleTimeString()}
+                        Last updated: {lastUpdated.toLocaleTimeString()} · Realtime: {realtimeConnected ? 'connected' : 'reconnecting'}
                     </span>
                 </div>
             </div>
@@ -381,7 +378,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600">Total Orders</p>
-                                <p className="text-2xl font-bold">{orders.length}</p>
+                                <p className="text-2xl font-bold">{realtimeOrders.length}</p>
                             </div>
                             <ShoppingBag className="w-8 h-8 text-blue-500" />
                         </div>
@@ -415,7 +412,7 @@ const AdminDashboard = () => {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <div className="border-b overflow-x-auto">
                     <div className="flex">
-                        {['overview', 'products', 'orders', 'reviews', 'inquiries', 'users'].map((tab) => (
+                        {['overview', 'products', 'orders', 'map', 'reviews', 'inquiries', 'users'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -439,7 +436,7 @@ const AdminDashboard = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="border rounded-lg p-4">
                                     <h3 className="font-semibold mb-3">Recent Orders</h3>
-                                    {orders.slice(0, 5).map((order) => (
+                                    {realtimeOrders.slice(0, 5).map((order) => (
                                         <div key={order.id} className="flex justify-between items-center py-2 border-b last:border-0">
                                             <div>
                                                 <p className="font-medium">Order #{order.order_number || order.id}</p>
@@ -455,7 +452,7 @@ const AdminDashboard = () => {
                                             </span>
                                         </div>
                                     ))}
-                                    {orders.length === 0 && (
+                                    {realtimeOrders.length === 0 && (
                                         <p className="text-gray-500 text-sm">No orders yet</p>
                                     )}
                                 </div>
@@ -762,7 +759,7 @@ const AdminDashboard = () => {
                         <div>
                             <h2 className="text-xl font-semibold mb-4">Orders Management</h2>
                             <div className="space-y-4">
-                                {orders.map((order) => (
+                                {realtimeOrders.map((order) => (
                                     <div key={order.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -794,10 +791,29 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {orders.length === 0 && (
+                                {realtimeOrders.length === 0 && (
                                     <p className="text-gray-500 text-center py-8">No orders found</p>
                                 )}
                             </div>
+                        </div>
+                    )}
+
+                    {/* Map Tab */}
+                    {activeTab === 'map' && (
+                        <div>
+                            <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                <MapIcon className="w-5 h-5 mr-2 text-harykims-600" />
+                                Active Order Locations
+                            </h2>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Live map of delivery-agent order positions. Orders without GPS coordinates are shown in the fallback list.
+                            </p>
+                            <MapView
+                                orders={realtimeOrders}
+                                center={[-1.286389, 36.817223]}
+                                zoom={12}
+                                height="520px"
+                            />
                         </div>
                     )}
 

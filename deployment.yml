@@ -1,0 +1,306 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hkintertech-frontend
+  labels:
+    app: hkintertech
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hkintertech
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: hkintertech
+        tier: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: hkintertech/frontend:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: VITE_API_URL
+              value: "https://api.hkintertech.com/api"
+          resources:
+            requests:
+              cpu: "125m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hkintertech-backend
+  labels:
+    app: hkintertech
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hkintertech
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: hkintertech
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: hkintertech/backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://mongo-primary:27017,mongo-secondary:27017/hk-intertech?replicaSet=rs0&readPreference=secondaryPreferred"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: PORT
+              value: "5000"
+            - name: NODE_ENV
+              value: "production"
+            - name: FRONTEND_URL
+              value: "https://hkintertech.com"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hkintertech-backend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hkintertech-backend
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hkintertech-frontend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hkintertech-frontend
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hkintertech-nginx
+  labels:
+    app: hkintertech
+    tier: proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hkintertech
+      tier: proxy
+  template:
+    metadata:
+      labels:
+        app: hkintertech
+        tier: proxy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hkintertech-services
+spec:
+  type: ClusterIP
+  selector:
+    app: hkintertech
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: api
+      port: 5000
+      targetPort: 5000
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hkintertech-config
+data:
+  MONGO_URI: "mongodb://mongo-primary:27017,mongo-secondary:27017/hk-intertech?replicaSet=rs0&readPreference=secondaryPreferred"
+  REDIS_URL: "redis://redis:6379"
+  NODE_ENV: "production"
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hkintertech
+      tier: database
+  template:
+    metadata:
+      labels:
+        app: hkintertech
+        tier: database
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_DATABASE
+              value: "hk-intertech"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hkintertech
+      tier: cache
+  template:
+    metadata:
+      labels:
+        app: hkintertech
+        tier: cache
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+requirements:
+  redis:
+    description: Required for session caching, rate limiting, and Socket.IO adapter
+    sticky_session: Required for Socket.IO horizontal scaling - use RedisAdapter with socket.io-redis
+    port: 6379
+    protocol: tcp
+  mongodb:
+    description: Required for all data persistence (users, products, orders, reviews, inquiries, wishlists)
+    replica_set: Recommended for production with at least 3 nodes
+    read_preference: secondaryPreferred for read-heavy product queries
+    port: 27017
+    protocol: tcp
+  socket_io:
+    description: Real-time WebSocket connections for live updates
+    sticky_session: REQUIRED - all Socket.IO connections from a client must route to the same backend pod
+    adapter: RedisAdapter (socket.io-redis) for multi-pod sticky session support
+    transport: ["websocket", "polling"]
+    cors_origin: Must be configured to match FRONTEND_URL

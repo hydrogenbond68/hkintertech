@@ -1,8 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/((?!api|admin).*)",
-      "destination": "/index.html"
-    }
-  ]
-}
+{"rewrites": [{"source": "/((?!api|assets|sockjs|socket.io).*)", "destination": "/index.html"}], "headers": [{"source": "/assets/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}, {"key": "ETag", "value": "$1"}]}, {"source": "/api/products/:path*", "headers": [{"key": "Cache-Control", "value": "public, max-age=10, stale-while-revalidate=30, stale-if-error=60"}, {"key": "X-Cache-Status", "value": "SWR"}]}, {"source": "/api/:path*", "headers": [{"key": "Cache-Control", "value": "no-store, no-cache, must-revalidate"}]}]}

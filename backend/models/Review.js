@@ -47,7 +47,7 @@ const reviewSchema = new mongoose.Schema({
 
 // Compound index to prevent duplicate reviews
 reviewSchema.index({ user: 1, product: 1 }, { unique: true });
-reviewSchema.index({ product: 1, created_at: -1 });
+reviewSchema.index({ product: 1, createdAt: -1 });
 
 const Review = mongoose.model('Review', reviewSchema);
 

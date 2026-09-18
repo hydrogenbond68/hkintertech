@@ -45,10 +45,7 @@ const productSchema = new mongoose.Schema({
     default: []
   },
   specifications: {
-    type: {
-      type: String,
-      enum: ['object', 'Map'],
-    },
+    type: mongoose.Schema.Types.Mixed,
     default: {}
   },
   is_featured: {
@@ -83,8 +80,10 @@ const productSchema = new mongoose.Schema({
 productSchema.index({ name: 'text', description: 'text', category: 'text' });
 
 // Compound index for category-based queries
-productSchema.index({ category: 1, is_active: 1 });
-productSchema.index({ is_featured: -1, created_at: -1 });
+productSchema.index({ category: 1, is_active: 1, createdAt: -1 });
+productSchema.index({ is_featured: 1, createdAt: -1 });
+productSchema.index({ average_rating: -1, total_reviews: -1 });
+productSchema.index({ price: 1, is_active: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 

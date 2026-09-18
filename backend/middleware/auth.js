@@ -29,6 +29,10 @@ const protect = async (req, res, next) => {
     if (!req.user.is_active) {
       return res.status(403).json({ error: 'Account is deactivated' });
     }
+
+    if (req.user.changedPasswordAfter(decoded.iat)) {
+      return res.status(401).json({ error: 'Token is no longer valid' });
+    }
     
     next();
   } catch (error) {

@@ -4,7 +4,6 @@ class ApiService {
     constructor() {
         this.baseURL = API_BASE_URL;
         this.token = localStorage.getItem('access_token');
-        this.cacheBuster = Date.now();
     }
 
     setToken(token) {
@@ -16,31 +15,26 @@ class ApiService {
         }
     }
 
-    getHeaders() {
+    getHeaders(options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
         const headers = {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'ngrok-skip-browser-warning': 'true'  // Skip ngrok warning page
+            'ngrok-skip-browser-warning': 'true'
         };
+        if (method !== 'GET') {
+            headers['Cache-Control'] = 'no-store';
+        }
+        if (options.headers) {
+            Object.assign(headers, options.headers);
+        }
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
         }
         return headers;
     }
 
-    getCacheBuster() {
-        return `_t=${Date.now()}`;
-    }
-
     async request(endpoint, options = {}) {
-        let url = `${this.baseURL}${endpoint}`;
-        if (options.method === 'GET' || !options.method) {
-            const separator = url.includes('?') ? '&' : '?';
-            url = `${url}${separator}${this.getCacheBuster()}`;
-        }
-
+        const url = `${this.baseURL}${endpoint}`;
         const config = {
             ...options,
             headers: {
@@ -173,7 +167,6 @@ class ApiService {
             method: 'POST',
             body: JSON.stringify(data),
         });
-        this.cacheBuster = Date.now();
         return response;
     }
 
@@ -182,7 +175,6 @@ class ApiService {
             method: 'PUT',
             body: JSON.stringify(data),
         });
-        this.cacheBuster = Date.now();
         return response;
     }
 
@@ -190,7 +182,6 @@ class ApiService {
         const response = await this.request(`/products/${id}`, {
             method: 'DELETE',
         });
-        this.cacheBuster = Date.now();
         return response;
     }
 
@@ -210,10 +201,12 @@ class ApiService {
 
     // ============= ORDER ENDPOINTS =============
     
-    async createOrder(data) {
+    async createOrder(data, idempotencyKey) {
+        const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
         return this.request('/orders', {
             method: 'POST',
             body: JSON.stringify(data),
+            headers,
         });
     }
 
@@ -295,6 +288,24 @@ class ApiService {
         return this.request(`/wishlist/${productId}`, {
             method: 'DELETE',
         });
+    }
+
+    async updateOrderLocation(id, location) {
+        return this.request(`/orders/${id}/location`, {
+            method: 'PUT',
+            body: JSON.stringify(location),
+        });
+    }
+
+    async initiateMpesa(orderId, phone, amount) {
+        return this.request('/payments/mpesa/stk', {
+            method: 'POST',
+            body: JSON.stringify({ order_id: orderId, phone, amount }),
+        });
+    }
+
+    async getMpesaStatus(orderId) {
+        return this.request(`/payments/mpesa/status/${orderId}`);
     }
 }
 

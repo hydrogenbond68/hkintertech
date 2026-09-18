@@ -67,7 +67,7 @@ const WhatsAppButton = () => {
 
             {/* Business Hours indicator */}
             <div className="mt-2 text-xs text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200">
-                Available 8AM - 6PM
+                Available 24hrs
             </div>
         </div>
     );

@@ -6,7 +6,8 @@ import { useCache } from '../contexts/CacheContext';
 import apiService from '../services/api';
 import { 
     Star, ShoppingCart, MessageCircle, ChevronLeft, 
-    Heart, Truck, Shield, Award, Plus, Minus, X
+    Heart, Truck, Shield, Award, Plus, Minus, X, Trash2,
+    Check, Info
 } from 'lucide-react';
 
 const ProductDetail = () => {
@@ -125,6 +126,15 @@ const ProductDetail = () => {
             setNewReview({ rating: 5, comment: '' });
         } catch (error) {
             console.error('Error submitting review:', error);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        try {
+            await apiService.deleteReview(reviewId);
+            setReviews(reviews.filter(r => (r._id || r.id) !== reviewId));
+        } catch (error) {
+            console.error('Error deleting review:', error);
         }
     };
 
@@ -376,9 +386,182 @@ const ProductDetail = () => {
                 </div>
             </div>
 
-            {/* Rest of the component (Tabs, Reviews, etc.) remains the same */}
-            {/* ... */}
-        </div>
+            {/* Tabs Section */}
+            <div className="mt-12 border-t border-gray-200 pt-8">
+                <div className="flex items-center gap-2 border-b border-gray-200 mb-6">
+                    {[
+                        { key: 'details', label: 'Details' },
+                        { key: 'specs', label: 'Specifications' },
+                        { key: 'reviews', label: `Reviews (${reviews.length})` },
+                    ].map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                                activeTab === tab.key
+                                    ? 'border-harykims-600 text-harykims-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Details Tab */}
+                {activeTab === 'details' && (
+                    <div className="space-y-4">
+                        <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
+                            <div className="flex items-center gap-2 text-sm">
+                                <Truck className="w-4 h-4 text-harykims-600" />
+                                <span className="text-gray-600">Fast Shipping</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                                <Shield className="w-4 h-4 text-harykims-600" />
+                                <span className="text-gray-600">Secure Payment</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                                <Award className="w-4 h-4 text-harykims-600" />
+                                <span className="text-gray-600">Quality Guarantee</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Specifications Tab */}
+                {activeTab === 'specs' && product.specifications && Object.keys(product.specifications).length > 0 ? (
+                    <div className="space-y-3">
+                        {Object.entries(product.specifications).map(([key, value]) => (
+                            <div key={key} className="flex items-start gap-4 py-2 border-b border-gray-100">
+                                <span className="text-sm font-medium text-gray-700 capitalize min-w-[120px]">
+                                    {key.replace(/_/g, ' ')}
+                                </span>
+                                <span className="text-sm text-gray-600">{String(value)}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-gray-500">
+                        <Info className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p>No specifications available</p>
+                    </div>
+                )}
+
+                {/* Reviews Tab */}
+                {activeTab === 'reviews' && (
+                    <div className="space-y-6">
+                        {isAuthenticated && (
+                            <div className="bg-gray-50 rounded-xl p-6">
+                                <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
+                                <form onSubmit={handleSubmitReview} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                                        <div className="flex items-center gap-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setNewReview(prev => ({ ...prev, rating: star }))}
+                                                    className={`w-8 h-8 ${
+                                                        star <= newReview.rating
+                                                            ? 'text-yellow-400 fill-current'
+                                                            : 'text-gray-300'
+                                                    }`}
+                                                >
+                                                    <Star className="w-6 h-6" />
+                                                </button>
+                                            ))}
+                                            <span className="text-sm text-gray-500 ml-2">{newReview.rating}/5</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
+                                        <textarea
+                                            value={newReview.comment}
+                                            onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                                            className="input-field"
+                                            rows="3"
+                                            placeholder="Share your experience with this product"
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn-primary">
+                                        Submit Review
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+
+                        {!isAuthenticated && (
+                            <div className="bg-gray-50 rounded-xl p-6 text-center">
+                                <p className="text-gray-600 mb-2">You must be logged in to write a review</p>
+                                <Link to="/login" className="btn-primary inline-flex items-center">
+                                    Sign In
+                                </Link>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            {reviews.length === 0 ? (
+                                <p className="text-center text-gray-500 py-8">No reviews yet. Be the first to review this product.</p>
+                            ) : (
+                                reviews.map((review) => (
+                                    <div key={review._id || review.id} className="bg-white rounded-lg border border-gray-200 p-5">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-harykims-100 flex items-center justify-center">
+                                                    <span className="text-sm font-bold text-harykims-700">
+                                                        {(review.user_name || 'U').charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{review.user_name || 'Anonymous'}</p>
+                                                    {review.is_verified_purchase && (
+                                                        <span className="text-xs text-green-600 flex items-center gap-1">
+                                                            <Check className="w-3 h-3" /> Verified Purchase
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star
+                                                            key={i}
+                                                            className={`w-4 h-4 ${
+                                                                i < (review.rating || 0)
+                                                                    ? 'text-yellow-400 fill-current'
+                                                                    : 'text-gray-300'
+                                                            }`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                {(review.user_name === user?.first_name + ' ' + user?.last_name || review.user_name === user?.email) && (
+                                                    <button
+                                                        onClick={() => handleDeleteReview(review._id || review.id)}
+                                                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                        aria-label="Delete review"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <p className="mt-3 text-gray-700">{review.comment}</p>
+                                        <p className="mt-2 text-xs text-gray-400">
+                                            {new Date(review.createdAt).toLocaleDateString('en-KE', {
+                                                year: 'numeric', month: 'short', day: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+             </div>
+         </div>
     );
 };
 

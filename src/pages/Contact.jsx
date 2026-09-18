@@ -42,7 +42,7 @@ const Contact = () => {
         {
             icon: Phone,
             title: 'Phone',
-            details: ['+254714818100', '+254118477340'],
+            details: ['+254714 818 100', '+254118 477 340'],
             color: 'bg-blue-50',
             iconColor: 'text-blue-600'
         },
@@ -63,7 +63,7 @@ const Contact = () => {
         {
             icon: Clock,
             title: 'Working Hours',
-            details: ['Mon-Fri: 8:00 AM - 8:00 PM', 'Sun: 9:00 AM - 8:00 PM'],
+            details: ['Mon-Mon: 24hrs'],
             color: 'bg-purple-50',
             iconColor: 'text-purple-600'
         }
@@ -130,7 +130,7 @@ const Contact = () => {
                                 </div>
                                 <h3 className="font-semibold text-harykims-800">M-Pesa Paybill</h3>
                             </div>
-                            <p className="text-2xl font-bold text-harykims-700">8379978</p>
+                            <p className="text-2xl font-bold text-harykims-700">3646096</p>
                             <p className="text-sm text-gray-600 mt-1">For payments and transactions</p>
                         </div>
                     </div>
