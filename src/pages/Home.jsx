@@ -139,11 +139,11 @@ const Home = () => {
                 <div className="container-custom py-1.5">
                     <div className="flex justify-between text-xs">
                         <div className="flex items-center space-x-6">
-                            <span>Welcome to Harykims Intertech</span>
+                            <span>Welcome to HKIntertech</span>
                             <span className="font-semibold">Kenya's Premier B2B Marketplace</span>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <Link to="/become-seller" className="hover:text-harykims-100">Sell on Harykims</Link>
+                            <Link to="/become-seller" className="hover:text-harykims-100">Sell on HKIntertech</Link>
                             <Link to="/about" className="hover:text-harykims-100">About</Link>
                             <Link to="/contact" className="hover:text-harykims-100">Contact</Link>
                         </div>
@@ -201,7 +201,7 @@ const Home = () => {
                                 </Link>
                                 <Link to="/become-seller" className="bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/30 flex items-center backdrop-blur-sm">
                                     <Package className="w-5 h-5 mr-2" />
-                                    Sell on Harykims
+                                    Sell on HKIntertech
                                 </Link>
                             </div>
 
@@ -384,7 +384,7 @@ const Home = () => {
                 <div className="container-custom text-center">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Grow Your Business?</h2>
                     <p className="text-lg text-harykims-100 mb-8 max-w-2xl mx-auto">
-                        Join thousands of businesses already sourcing and selling on Harykims Intertech.
+                        Join thousands of businesses already sourcing and selling on HKIntertech.
                         Start your journey today.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
@@ -414,7 +414,7 @@ const Home = () => {
                                     }}
                                 />
                                 <span className="text-white font-bold text-lg">
-                                    <span className="text-harykims-400">Harykims</span>
+                                    <span className="text-harykims-400">HK</span>
                                     <span className="text-gray-300">Intertech</span>
                                 </span>
                             </div>
@@ -484,7 +484,7 @@ const Home = () => {
                             <ul className="space-y-2 text-sm">
                                 <li>📞 +254714818100 / +254118477340</li>
                                 <li>📧 harykimsintertech@gmail.com</li>
-                                <li>📍 Nairobi, Kenya</li>
+                                <li>📍 Wangige, Kabete</li>
                                 <li className="flex items-center space-x-2 mt-2">
                                     <span className="bg-green-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
                                         <MessageCircle className="w-3 h-3" />
@@ -495,7 +495,7 @@ const Home = () => {
                         </div>
                     </div>
                     <div className="border-t border-harykims-800 mt-8 pt-8 text-sm text-center text-gray-400">
-                        <p>© 2024 Harykims Intertech. All rights reserved. Made with ❤️ in Kenya.</p>
+                        <p>© 2024 HKIntertech. All rights reserved. Made with ❤️ in Kenya.</p>
                     </div>
                 </div>
             </footer>

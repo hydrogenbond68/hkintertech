@@ -49,14 +49,24 @@ const About = () => {
             bio: 'Expert in supply chain management and customer experience optimization.'
         },
         {
-            name: 'Dr. Bond',
-            role: 'Head of Technology',
-            bio: 'Full-stack developer passionate about creating seamless digital experiences.'
-        },
-        {
             name: 'Charity Njoki',
             role: 'Customer Experience Lead',
             bio: 'Dedicated to ensuring every customer gets the best service possible.'
+        },
+        {
+            name: 'Hesus',
+            role: 'Strategic Planning & Development',
+            bio: 'Developing Marketing Strategies: Creating comprehensive plans to achieve business objectives (e.g., increasing market share, entering new markets, or launching new products).'
+        },
+        {
+            name: 'Kelvin',
+            role: 'Strategic Planning & Development',
+            bio: 'Kelvin is the Computer Maintenance and IT Support Specialist at HKIntertech, where they are in charge of computer maintenance, repair, and software installation. With 15 years of experience in hardware diagnostics, system troubleshooting, and software deployment.'
+        },
+        {
+            name: 'Dr. Bond',
+            role: 'Head of Technology',
+            bio: 'Full-stack developer passionate about creating seamless digital experiences.'
         },
         {
             name: 'Mistaken',
@@ -70,7 +80,7 @@ const About = () => {
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-harykims-700 to-harykims-500 text-white py-16">
                 <div className="container-custom text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">About Harykims Intertech</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4">About HKIntertech</h1>
                     <p className="text-xl text-harykims-100 max-w-2xl mx-auto">
                         Kenya's premier B2B marketplace connecting businesses with quality products and trusted suppliers.
                     </p>
@@ -115,7 +125,7 @@ const About = () => {
                     <div className="max-w-3xl mx-auto text-center">
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
                         <p className="text-gray-700 leading-relaxed mb-6">
-                            Founded in 2024, Harykims Intertech was born from a vision to revolutionize 
+                            Founded in 2024, HKIntertech was born from a vision to revolutionize 
                             B2B commerce in Kenya. We recognized the need for a reliable, transparent, 
                             and efficient marketplace where businesses could source quality products 
                             with confidence.
@@ -183,7 +193,7 @@ const About = () => {
                 <div className="container-custom text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to Grow Your Business?</h2>
                     <p className="text-harykims-100 mb-8 max-w-2xl mx-auto">
-                        Join thousands of businesses already sourcing and selling on Harykims Intertech.
+                        Join thousands of businesses already sourcing and selling on HKIntertech.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <Link to="/register" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors">

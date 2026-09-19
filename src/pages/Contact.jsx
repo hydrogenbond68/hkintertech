@@ -253,8 +253,8 @@ const Contact = () => {
                 <div className="mt-12 bg-gray-200 rounded-xl overflow-hidden h-64 flex items-center justify-center">
                     <div className="text-center text-gray-500">
                         <MapPin className="w-12 h-12 mx-auto mb-2 text-harykims-600" />
-                        <p className="font-medium">Nairobi, Kenya</p>
-                        <p className="text-sm">📍 Find us at our Nairobi office</p>
+                        <p className="font-medium">Wangige, Kabete</p>
+                        <p className="text-sm">📍 Find us at our Wangige office</p>
                     </div>
                 </div>
             </div>

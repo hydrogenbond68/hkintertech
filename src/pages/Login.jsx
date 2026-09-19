@@ -58,7 +58,7 @@ const Login = () => {
                         Welcome Back
                     </h2>
                     <p className="mt-2 text-center text-gray-600">
-                        Sign in to your Harykims Intertech account
+                        Sign in to your HKIntertech account
                     </p>
                 </div>
 

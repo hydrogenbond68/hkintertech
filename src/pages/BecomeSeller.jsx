@@ -65,7 +65,7 @@ const BecomeSeller = () => {
                 <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
                     <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted! 🎉</h2>
-                    <p className="text-gray-600 mb-4">Thank you for applying to become a seller on Harykims Intertech.</p>
+                    <p className="text-gray-600 mb-4">Thank you for applying to become a seller on HKIntertech.</p>
                     <p className="text-sm text-gray-500">We will review your application and get back to you within 24-48 hours.</p>
                     <button
                         onClick={() => navigate('/')}
@@ -87,7 +87,7 @@ const BecomeSeller = () => {
                 </div>
 
                 <p className="text-gray-600 mb-6">
-                    Fill in your business details to start selling on Harykims Intertech.
+                    Fill in your business details to start selling on HKIntertech.
                     All fields marked with * are required.
                 </p>
 
@@ -292,7 +292,7 @@ const BecomeSeller = () => {
                 </form>
 
                 <div className="mt-6 p-4 bg-harykims-50 rounded-lg">
-                    <h3 className="font-semibold text-harykims-700 mb-2">Benefits of Selling on Harykims Intertech:</h3>
+                    <h3 className="font-semibold text-harykims-700 mb-2">Benefits of Selling on HKIntertech:</h3>
                     <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
                         <li>Reach thousands of customers across Kenya</li>
                         <li>No monthly subscription fees</li>

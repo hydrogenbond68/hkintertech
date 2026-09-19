@@ -62,7 +62,7 @@ const Register = () => {
                         Create Account
                     </h2>
                     <p className="mt-2 text-center text-gray-600">
-                        Join Harykims Intertech Marketplace
+                        Join HKIntertech Marketplace
                     </p>
                 </div>
 

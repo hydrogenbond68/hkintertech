@@ -48,7 +48,7 @@ const Navbar = () => {
                             }}
                         />
                         <span className="text-xl font-bold tracking-tight">
-                            <span className="text-harykims-700">Harykims</span>
+                            <span className="text-harykims-700">Hk</span>
                             <span className="text-harykims-500">Intertech</span>
                         </span>
                     </Link>
