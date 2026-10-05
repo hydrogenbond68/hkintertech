@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import Order from '../models/Order.js';
 import {
   createOrder as createOrderInDatabase,
   listOrders,

@@ -5,7 +5,7 @@ import apiService from '../services/api';
 import { Package, Clock, Truck, CheckCircle, XCircle, ChevronRight, ShoppingBag } from 'lucide-react';
 
 const Orders = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

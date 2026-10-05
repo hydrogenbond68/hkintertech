@@ -1,13 +1,13 @@
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { sendEmail } from '../config/email.js';
+import { signToken } from '../config/jwt.js';
 
-const tokenFor = (user) => jwt.sign(
-  { id: user._id.toString(), email: user.email, is_admin: Boolean(user.is_admin) },
-  process.env.JWT_SECRET || 'default-secret',
-  { expiresIn: process.env.JWT_EXPIRES_IN || '7d' },
-);
+const tokenFor = (user) => signToken({
+  id: user._id.toString(),
+  email: user.email,
+  is_admin: Boolean(user.is_admin),
+});
 
 const publicUser = (user) => ({
   id: user._id.toString(),

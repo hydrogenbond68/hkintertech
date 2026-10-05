@@ -30,7 +30,7 @@ const Login = () => {
             } else {
                 setError(result.error || 'Login failed. Please check your credentials.');
             }
-        } catch (err) {
+        } catch {
             setError('An error occurred during login. Please try again.');
         } finally {
             setLoading(false);

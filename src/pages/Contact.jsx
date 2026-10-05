@@ -27,7 +27,7 @@ const Contact = () => {
             setSuccess(true);
             setFormData({ name: '', email: '', subject: '', message: '' });
             setTimeout(() => setSuccess(false), 5000);
-        } catch (err) {
+        } catch {
             setError('Failed to send message. Please try again.');
         } finally {
             setLoading(false);

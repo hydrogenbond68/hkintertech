@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 const WhatsAppButton = () => {
-    const [isVisible, setIsVisible] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
     // Phone number (without + sign)
     const phoneNumber = '254118477340';
-    // Formatted phone number for display
-    const displayNumber = '0118 477 340';
     // WhatsApp URL
     const whatsappUrl = `https://wa.me/${phoneNumber}`;
 
@@ -47,7 +44,6 @@ const WhatsAppButton = () => {
                     transition-all duration-300 transform
                     bg-green-500 hover:bg-green-600
                     ${isHovered ? 'scale-110' : 'scale-100'}
-                    ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}
                 aria-label="Chat on WhatsApp"
             >

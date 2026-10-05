@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useCache } from '../contexts/CacheContext';
 import apiService from '../services/api';
+import { PRODUCT_PLACEHOLDER, AVATAR_PLACEHOLDER } from '../utils/image';
+import ProductCard from '../components/products/ProductCard';
 import { 
     Star, ShoppingCart, MessageCircle, ChevronLeft, 
-    Heart, Truck, Shield, Award, Plus, Minus, X, Trash2,
+    Heart, Truck, Shield, Award, Plus, Minus, Trash2,
     Check, Info
 } from 'lucide-react';
 
@@ -28,6 +30,7 @@ const ProductDetail = () => {
     const [showInquiryForm, setShowInquiryForm] = useState(false);
     const [inWishlist, setInWishlist] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     useEffect(() => {
         fetchProductData();
@@ -53,6 +56,24 @@ const ProductDetail = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // Suggestions are supplementary: a failure here must not blank the
+        // detail page, so the section simply stays hidden.
+        let cancelled = false;
+        const loadRelated = async () => {
+            try {
+                const data = await apiService.getRelatedProducts(id, 6);
+                if (!cancelled) setRelatedProducts(data.products || []);
+            } catch (error) {
+                console.error('Error fetching related products:', error);
+                if (!cancelled) setRelatedProducts([]);
+            }
+        };
+        setRelatedProducts([]);
+        loadRelated();
+        return () => { cancelled = true; };
+    }, [id, productVersion]);
 
     const checkWishlist = async () => {
         try {
@@ -197,7 +218,7 @@ const ProductDetail = () => {
     }
 
     const images = getImages();
-    const mainImage = images.length > 0 ? images[selectedImage] : '/api/placeholder/600/400';
+    const mainImage = images.length > 0 ? images[selectedImage] : PRODUCT_PLACEHOLDER;
 
     return (
         <div className="container-custom py-8">
@@ -218,7 +239,7 @@ const ProductDetail = () => {
                             alt={product.name}
                             className="w-full h-96 object-cover"
                             onError={(e) => {
-                                e.target.src = '/api/placeholder/600/400';
+                                e.target.src = PRODUCT_PLACEHOLDER;
                             }}
                         />
                     </div>
@@ -241,7 +262,7 @@ const ProductDetail = () => {
                                         alt={`${product.name} view ${index + 1}`}
                                         className="w-full h-20 object-cover"
                                         onError={(e) => {
-                                            e.target.src = '/api/placeholder/100/100';
+                                            e.target.src = AVATAR_PLACEHOLDER;
                                         }}
                                     />
                                 </div>
@@ -561,6 +582,17 @@ const ProductDetail = () => {
                     </div>
                 )}
              </div>
+
+            {relatedProducts.length > 0 && (
+                <section className="mt-12 border-t border-gray-200 pt-8">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
+                        {relatedProducts.map((item) => (
+                            <ProductCard key={item.id || item._id} product={item} />
+                        ))}
+                    </div>
+                </section>
+            )}
          </div>
     );
 };

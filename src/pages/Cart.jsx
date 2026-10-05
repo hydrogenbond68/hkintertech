@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
-import { X, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CreditCard, CheckCircle, MapPin, AlertCircle } from 'lucide-react';
+import { PRODUCT_PLACEHOLDER, resolveProductImage, imageFallback } from '../utils/image';
+import { X, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CreditCard, MapPin, AlertCircle } from 'lucide-react';
 
 const Cart = () => {
     const { cartItems, totalItems, totalPrice, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -12,7 +13,6 @@ const Cart = () => {
     const [showCheckout, setShowCheckout] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
-    const [order, setOrder] = useState(null);
     const [shippingAddress, setShippingAddress] = useState(user?.address || '');
     const [shippingCity, setShippingCity] = useState('Nairobi');
     const [phoneNumber, setPhoneNumber] = useState(user?.phone || '');
@@ -26,10 +26,7 @@ const Cart = () => {
         maximumFractionDigits: 0,
     }).format(price || 0);
 
-    const getImage = (item) => {
-        if (Array.isArray(item.image_urls)) return item.image_urls[0] || '/api/placeholder/400/300';
-        return item.image_url || item.image || '/api/placeholder/400/300';
-    };
+    const getImage = (item) => resolveProductImage(item);
 
     const handleProceedToCheckout = () => {
         if (!isAuthenticated) {
@@ -75,7 +72,6 @@ const Cart = () => {
             };
             const response = await apiService.createOrder(payload, createIdempotencyKey());
             const createdOrder = response.order;
-            setOrder(createdOrder);
 
             if (paymentMethod === 'mpesa') {
                 try {
@@ -178,7 +174,7 @@ const Cart = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
                     {cartItems.map((item) => <div key={item.id} className="flex items-center p-4 border-b last:border-0 hover:bg-gray-50">
-                        <img src={getImage(item)} alt={item.name} className="w-24 h-24 object-cover rounded-lg" onError={(e) => { e.target.src = '/api/placeholder/100/100'; }} />
+                        <img src={getImage(item)} alt={item.name} className="w-24 h-24 object-cover rounded-lg" onError={imageFallback(PRODUCT_PLACEHOLDER)} />
                         <div className="flex-1 ml-4"><Link to={`/product/${item.id}`} className="font-semibold hover:text-harykims-600">{item.name}</Link><p className="text-harykims-600 font-bold text-lg">{formatPrice(item.price)}</p><p className="text-sm text-gray-500">MOQ: {item.min_order_quantity || 1}</p></div>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center border rounded-lg"><button onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="px-3 py-2 hover:bg-gray-50"><Minus className="w-4 h-4" /></button><span className="px-4 py-2 min-w-[3rem] text-center font-semibold">{item.quantity}</span><button onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus className="w-4 h-4" /></button></div>

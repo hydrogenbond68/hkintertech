@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-    Leaf, Users, Target, Award, Truck, Shield, 
-    Clock, Globe, Heart, Mail, Phone, MapPin,
-    CheckCircle, Star, TrendingUp, Package
+    Leaf, Users, Target, Award, 
+    Clock, Globe, Star, Package
 } from 'lucide-react';
 
 const About = () => {

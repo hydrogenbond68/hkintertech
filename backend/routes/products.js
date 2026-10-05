@@ -3,6 +3,7 @@ import { protect, admin } from '../middleware/auth.js';
 import {
   getProducts,
   getProduct,
+  getRelatedProducts,
   getCategories,
   createProduct,
   updateProduct,
@@ -21,6 +22,7 @@ const catalogHeaders = (req, res, next) => {
 router.get('/', catalogHeaders, getProducts);
 router.get('/categories', catalogHeaders, getCategories);
 router.get('/:id', catalogHeaders, getProduct);
+router.get('/:id/related', catalogHeaders, getRelatedProducts);
 router.post('/', protect, admin, createProduct);
 router.put('/:id', protect, admin, updateProduct);
 router.delete('/:id', protect, admin, deleteProduct);

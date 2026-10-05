@@ -7,15 +7,13 @@ import { useCache } from '../contexts/CacheContext';
 import ProductCard from '../components/products/ProductCard';
 import ProductGridSkeleton from '../components/common/ProductGridSkeleton';
 import { 
-    ArrowRight, Award, Truck, Shield, Headphones, 
-    TrendingUp, Clock, Star, ChevronRight, 
-    Laptop, Smartphone, Watch, Speaker, Camera, 
+    ArrowRight, Truck, Shield, Headphones, 
+    TrendingUp, Clock, ChevronRight, 
+    Laptop, Smartphone, 
     Home as HomeIcon, Shirt, Car, Book, Dumbbell, 
-    Coffee, Gift, Package, Users, Globe, BarChart3,
-    ShoppingBag, Sparkles, Zap, CheckCircle,
-    Heart, Gamepad, HelpCircle, Leaf, RefreshCw,
-    MessageCircle, Instagram, Facebook, Twitter, 
-    Youtube, Linkedin, Send, Music2, Share2
+    Coffee, Package, Globe, Sparkles,
+    Heart, Gamepad, Leaf,
+    MessageCircle, Instagram, Facebook, Twitter
 } from 'lucide-react';
 
 // Custom TikTok icon component (since it might not be available in all versions)
@@ -33,8 +31,6 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
-    const [lastUpdated, setLastUpdated] = useState(new Date());
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -51,18 +47,15 @@ const Home = () => {
             setNewProducts(newData.products || []);
             setTrendingProducts(trendingData.products || []);
             setCategories(categoriesData.categories || []);
-            setLastUpdated(new Date());
         } catch (error) {
             console.error('Error fetching data:', error);
             setError(error.message || 'Failed to load some products');
         } finally {
             setLoading(false);
-            setIsRefreshing(false);
         }
     };
 
     const refresh = async () => {
-        setIsRefreshing(true);
         await fetchData();
     };
 

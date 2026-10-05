@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
+import { useAuth } from './AuthContext';
 
 const SocketContext = createContext(null);
 
@@ -14,21 +15,24 @@ export const useSocket = () => {
 const configuredApiUrl = import.meta.env.VITE_API_URL;
 const API_BASE_URL = configuredApiUrl || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
 
+// Strip only a trailing "/api" segment so the Socket.IO server root is targeted.
+// A bare .replace('/api', '') would also truncate a host like "https://api.example.com".
+const SOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+
 export const SocketProvider = ({ children }) => {
+    const { user } = useAuth();
     const [isConnected, setIsConnected] = useState(false);
     const [socket, setSocket] = useState(null);
-    const [authVersion, setAuthVersion] = useState(0);
+
+    // Depend on the identity that actually gates server-side authorization.
+    // The previous effect had an empty dependency list, so a socket opened before
+    // login stayed anonymous for the whole session and silently lost its rooms.
+    const identityKey = user ? `${user.id}:${Boolean(user.is_admin)}` : 'anonymous';
 
     useEffect(() => {
-        const refreshSocket = () => setAuthVersion((value) => value + 1);
-        window.addEventListener('auth-changed', refreshSocket);
-        return () => window.removeEventListener('auth-changed', refreshSocket);
-    }, [authVersion]);
+    const token = localStorage.getItem('access_token');
 
-    useEffect(() => {
-        const token = localStorage.getItem('access_token');
-
-    const s = io(API_BASE_URL.replace('/api', ''), {
+    const s = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       auth: token ? { token } : {},
       reconnection: true,
@@ -52,9 +56,11 @@ export const SocketProvider = ({ children }) => {
     setSocket(s);
 
     return () => {
+      s.removeAllListeners();
       s.disconnect();
+      setIsConnected(false);
     };
-  }, []);
+  }, [identityKey]);
 
   const on = useCallback((event, handler) => {
     if (!socket) return;

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, ShoppingBag } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import apiService from '../services/api';
+import { PRODUCT_PLACEHOLDER } from '../utils/image';
 
 const Wishlist = () => {
-  const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +61,7 @@ const Wishlist = () => {
             return (
               <div key={product._id || product.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <Link to={`/product/${product._id || product.id}`} className="block bg-gray-50">
-                  <img src={image || '/api/placeholder/400/300'} alt={product.name} className="w-full h-48 object-cover" onError={(e) => { e.target.src = '/api/placeholder/400/300'; }} />
+                  <img src={image || PRODUCT_PLACEHOLDER} alt={product.name} className="w-full h-48 object-cover" onError={(e) => { e.target.src = PRODUCT_PLACEHOLDER; }} />
                 </Link>
                 <div className="p-4">
                   <Link to={`/product/${product._id || product.id}`} className="font-semibold hover:text-harykims-600">{product.name}</Link>

@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,7 +29,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-public/logo.jpeg
 public/logo.jpeg
 public/*.jpeg
 public/*.jpg

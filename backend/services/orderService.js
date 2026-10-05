@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { invalidateCatalog } from './cache.js';
-import { emitOrderEvent } from './realtime.js';
+import { emitOrderEvent, emitOrderLocation } from './realtime.js';
 
 const allowedStatuses = new Set(['pending', 'processing', 'shipped', 'delivered', 'cancelled']);
 const allowedDeliveryStatuses = new Set(['pending', 'assigned', 'picked_up', 'in_transit', 'delivered', 'failed']);

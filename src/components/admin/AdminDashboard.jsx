@@ -3,20 +3,20 @@ import logoImage from '../../assets/logo.jpeg';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCache } from '../../contexts/CacheContext';
 import { useRealtimeOrders } from '../../hooks/useRealtimeOrders';
-import ProductGridSkeleton from '../common/ProductGridSkeleton';
+import { AVATAR_PLACEHOLDER } from '../../utils/image';
 import MapView from '../common/MapView';
 import apiService from '../../services/api';
 import {
-    Package, ShoppingBag, Users, Star, MessageCircle,
-    Plus, Edit, Trash2, Eye, CheckCircle, XCircle,
-    Clock, TrendingUp, DollarSign, BarChart3, Image, X, Upload, RefreshCw,
-    User, Mail, Phone, MapPin, Building, Filter, Search, Shield,
-    UserCog, UserPlus, UserX, UserCheck, MapIcon, Activity
+    Package, ShoppingBag, Users, Star,
+    Plus, Edit, Trash2, DollarSign, X, Upload, RefreshCw,
+    User, Search,
+    UserCog, UserX, UserCheck, MapIcon,
+    BarChart2, TrendingUp, Eye, Activity
 } from 'lucide-react';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
-    const { invalidateProducts } = useCache();
+    const { invalidateProducts, invalidateOrders } = useCache();
     const [activeTab, setActiveTab] = useState('overview');
     const [products, setProducts] = useState([]);
     const [reviews, setReviews] = useState([]);
@@ -33,6 +33,14 @@ const AdminDashboard = () => {
     const [categories, setCategories] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showUserModal, setShowUserModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [orderSearch, setOrderSearch] = useState('');
+    const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+    const [analytics, setAnalytics] = useState(null);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [trafficData, setTrafficData] = useState([]);
+    const [salesData, setSalesData] = useState([]);
+    const [analyticsTimeRange, setAnalyticsTimeRange] = useState('30d');
     const [productForm, setProductForm] = useState({
         name: '',
         description: '',
@@ -88,9 +96,35 @@ const AdminDashboard = () => {
         }
     }, [setRealtimeOrders]);
 
+    // Load analytics data
+    const loadAnalytics = useCallback(async () => {
+        try {
+            setAnalyticsLoading(true);
+            const [overviewData, trafficDataRes, salesDataRes] = await Promise.all([
+                apiService.getAnalyticsOverview().catch(() => null),
+                apiService.getTrafficData({ range: analyticsTimeRange }).catch(() => ({ data: [] })),
+                apiService.getSalesAnalytics({ range: analyticsTimeRange }).catch(() => ({ data: [] }))
+            ]);
+
+            if (overviewData) setAnalytics(overviewData);
+            setTrafficData(trafficDataRes.data || []);
+            setSalesData(salesDataRes.data || []);
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+        } finally {
+            setAnalyticsLoading(false);
+        }
+    }, [analyticsTimeRange]);
+
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    useEffect(() => {
+        if (activeTab === 'analytics') {
+            loadAnalytics();
+        }
+    }, [activeTab, loadAnalytics]);
 
 
     const handleDeleteProduct = async (id) => {
@@ -228,13 +262,27 @@ const AdminDashboard = () => {
         setShowProductForm(true);
     };
 
+    const [statusSaving, setStatusSaving] = useState(false);
+    const [statusError, setStatusError] = useState('');
+
     const handleUpdateOrderStatus = async (orderId, status) => {
+        const previous = realtimeOrders.find((o) => o.id === orderId)?.status;
+        // Optimistic update so the select does not snap back while the request
+        // is in flight; reverted if the API rejects the transition.
+        setStatusSaving(true);
+        setStatusError('');
+        setRealtimeOrders(realtimeOrders.map((o) => (o.id === orderId ? { ...o, status } : o)));
+        setSelectedOrder((current) => (current && current.id === orderId ? { ...current, status } : current));
         try {
             await apiService.updateOrderStatus(orderId, status);
-            await loadData();
             invalidateOrders();
         } catch (error) {
             console.error('Error updating order:', error);
+            setRealtimeOrders(realtimeOrders.map((o) => (o.id === orderId ? { ...o, status: previous } : o)));
+            setSelectedOrder((current) => (current && current.id === orderId ? { ...current, status: previous } : current));
+            setStatusError(`Could not update order #${orderId}: ${error.message}`);
+        } finally {
+            setStatusSaving(false);
         }
     };
 
@@ -293,10 +341,10 @@ const AdminDashboard = () => {
                     return images[0];
                 }
             } catch {
-                return '/api/placeholder/100/100';
+                return AVATAR_PLACEHOLDER;
             }
         }
-        return '/api/placeholder/100/100';
+        return AVATAR_PLACEHOLDER;
     };
 
     // Filter products based on search and category
@@ -317,6 +365,23 @@ const AdminDashboard = () => {
     });
 
     const totalRevenue = realtimeOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    const orderItemCount = (order) =>
+        (order.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+
+    const orderLabel = (order) => order.order_number || order.id;
+
+    const filteredOrders = realtimeOrders.filter((order) => {
+        if (orderStatusFilter !== 'all' && order.status !== orderStatusFilter) return false;
+        const search = orderSearch.trim().toLowerCase();
+        if (!search) return true;
+        return (
+            String(order.order_number || '').toLowerCase().includes(search) ||
+            String(order.user_name || '').toLowerCase().includes(search) ||
+            String(order.user_email || '').toLowerCase().includes(search) ||
+            (order.items || []).some((item) => String(item.product_name || '').toLowerCase().includes(search))
+        );
+    });
     const pendingOrders = realtimeOrders.filter(o => o.status === 'pending').length;
     const totalProducts = products.length;
 
@@ -412,7 +477,7 @@ const AdminDashboard = () => {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <div className="border-b overflow-x-auto">
                     <div className="flex">
-                        {['overview', 'products', 'orders', 'map', 'reviews', 'inquiries', 'users'].map((tab) => (
+                        {['overview', 'products', 'orders', 'map', 'reviews', 'inquiries', 'users', 'analytics'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -645,7 +710,7 @@ const AdminDashboard = () => {
                                                                 alt={`Product ${index + 1}`}
                                                                 className="w-full h-20 object-cover rounded-lg border border-gray-200"
                                                                 onError={(e) => {
-                                                                    e.target.src = '/api/placeholder/100/100';
+                                                                    e.target.src = AVATAR_PLACEHOLDER;
                                                                 }}
                                                             />
                                                             <button
@@ -711,7 +776,7 @@ const AdminDashboard = () => {
                                                         alt={product.name}
                                                         className="w-12 h-12 object-cover rounded-lg border border-gray-200"
                                                         onError={(e) => {
-                                                            e.target.src = '/api/placeholder/48/48';
+                                                            e.target.src = AVATAR_PLACEHOLDER;
                                                         }}
                                                     />
                                                 </td>
@@ -757,22 +822,65 @@ const AdminDashboard = () => {
                     {/* Orders Tab */}
                     {activeTab === 'orders' && (
                         <div>
-                            <h2 className="text-xl font-semibold mb-4">Orders Management</h2>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                <h2 className="text-xl font-semibold">Orders Management</h2>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <div className="relative">
+                                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            value={orderSearch}
+                                            onChange={(e) => setOrderSearch(e.target.value)}
+                                            placeholder="Search orders"
+                                            className="pl-9 pr-3 py-2 border rounded-lg text-sm w-full sm:w-56"
+                                        />
+                                    </div>
+                                    <select
+                                        value={orderStatusFilter}
+                                        onChange={(e) => setOrderStatusFilter(e.target.value)}
+                                        className="px-3 py-2 border rounded-lg text-sm"
+                                    >
+                                        <option value="all">All statuses</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="processing">Processing</option>
+                                        <option value="shipped">Shipped</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {statusError && (
+                                <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                                    {statusError}
+                                </div>
+                            )}
+
                             <div className="space-y-4">
-                                {realtimeOrders.map((order) => (
+                                {filteredOrders.map((order) => (
                                     <div key={order.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="font-semibold">Order #{order.order_number || order.id}</p>
-                                                <p className="text-sm text-gray-600">Total: {formatPrice(order.total_amount)}</p>
-                                                <p className="text-sm text-gray-600">Customer: User #{order.user_id}</p>
-                                                <p className="text-xs text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</p>
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="font-semibold">Order #{orderLabel(order)}</p>
+                                                <p className="text-sm text-gray-600">
+                                                    {order.user_name || 'Customer'}
+                                                    {order.user_email ? ` · ${order.user_email}` : ''}
+                                                </p>
+                                                <p className="text-sm text-gray-600">
+                                                    {orderItemCount(order)} item(s) · Total: {formatPrice(order.total_amount)}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {order.createdAt || order.created_at
+                                                        ? new Date(order.createdAt || order.created_at).toLocaleString()
+                                                        : 'N/A'}
+                                                </p>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                                                 <select
                                                     value={order.status || 'pending'}
+                                                    disabled={statusSaving}
                                                     onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                                                    className="px-3 py-1 border rounded-lg text-sm"
+                                                    className="px-3 py-1 border rounded-lg text-sm disabled:opacity-60"
                                                 >
                                                     <option value="pending">Pending</option>
                                                     <option value="processing">Processing</option>
@@ -780,19 +888,29 @@ const AdminDashboard = () => {
                                                     <option value="delivered">Delivered</option>
                                                     <option value="cancelled">Cancelled</option>
                                                 </select>
-                                                <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                                <span className={`px-2 py-1 rounded-full text-xs capitalize ${
                                                     order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                                                     order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
+                                                    order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                                    order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-gray-100 text-gray-800'
                                                 }`}>
                                                     {order.status || 'pending'}
                                                 </span>
+                                                <button
+                                                    onClick={() => setSelectedOrder(order)}
+                                                    className="text-sm text-harykims-600 hover:text-harykims-700"
+                                                >
+                                                    View details
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                {realtimeOrders.length === 0 && (
-                                    <p className="text-gray-500 text-center py-8">No orders found</p>
+                                {filteredOrders.length === 0 && (
+                                    <p className="text-gray-500 text-center py-8">
+                                        {realtimeOrders.length === 0 ? 'No orders found' : 'No orders match your filters'}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -1018,6 +1136,154 @@ const AdminDashboard = () => {
                                 )}
                             </div>
 
+                            {/* Order Detail Modal */}
+                            {selectedOrder && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                    <div className="bg-white rounded-xl shadow-xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-gray-900">
+                                                    Order #{orderLabel(selectedOrder)}
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {selectedOrder.createdAt || selectedOrder.created_at
+                                                        ? new Date(selectedOrder.createdAt || selectedOrder.created_at).toLocaleString()
+                                                        : 'Date unavailable'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setSelectedOrder(null)}
+                                                className="text-gray-400 hover:text-gray-600"
+                                                aria-label="Close order details"
+                                            >
+                                                <X className="w-6 h-6" />
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div>
+                                                <label className="text-sm text-gray-500">Customer</label>
+                                                <p className="font-medium">{selectedOrder.user_name || 'Not provided'}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Email</label>
+                                                <p className="font-medium">{selectedOrder.user_email || 'Not provided'}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Payment</label>
+                                                <p className="font-medium capitalize">
+                                                    {selectedOrder.payment_method || 'n/a'} · {selectedOrder.payment_status || 'pending'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Delivery status</label>
+                                                <p className="font-medium capitalize">{selectedOrder.delivery_status || 'pending'}</p>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <label className="text-sm text-gray-500">Shipping address</label>
+                                                <p className="font-medium">
+                                                    {[selectedOrder.shipping_address, selectedOrder.shipping_city, selectedOrder.shipping_country]
+                                                        .filter(Boolean)
+                                                        .join(', ') || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            {selectedOrder.notes && (
+                                                <div className="col-span-2">
+                                                    <label className="text-sm text-gray-500">Notes</label>
+                                                    <p className="font-medium">{selectedOrder.notes}</p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <h4 className="font-semibold mb-2">Items</h4>
+                                        <div className="space-y-2 mb-6">
+                                            {(selectedOrder.items || []).map((item, index) => (
+                                                <div
+                                                    key={item.product || index}
+                                                    className="flex items-center justify-between gap-4 border rounded-lg p-3"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        {item.product_image ? (
+                                                            <img
+                                                                src={item.product_image}
+                                                                alt={item.product_name}
+                                                                className="w-10 h-10 rounded object-cover"
+                                                                onError={(e) => { e.target.src = AVATAR_PLACEHOLDER; }}
+                                                            />
+                                                        ) : null}
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium truncate">{item.product_name}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {item.quantity} × {formatPrice(item.price)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="font-semibold shrink-0">{formatPrice(item.subtotal)}</span>
+                                                </div>
+                                            ))}
+                                            {(!selectedOrder.items || selectedOrder.items.length === 0) && (
+                                                <p className="text-sm text-gray-500">No items recorded</p>
+                                            )}
+                                        </div>
+
+                                        <div className="border-t pt-4 mb-6 space-y-1 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Subtotal</span>
+                                                <span>{formatPrice(selectedOrder.total_amount - (selectedOrder.shipping_fee || 0) - (selectedOrder.tax_amount || 0))}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Shipping</span>
+                                                <span>{formatPrice(selectedOrder.shipping_fee || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Tax</span>
+                                                <span>{formatPrice(selectedOrder.tax_amount || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between font-semibold text-base">
+                                                <span>Total</span>
+                                                <span>{formatPrice(selectedOrder.total_amount)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                            <label htmlFor="order-status-select" className="text-sm font-medium text-gray-700">
+                                                Update status
+                                            </label>
+                                            <select
+                                                id="order-status-select"
+                                                value={selectedOrder.status || 'pending'}
+                                                disabled={statusSaving}
+                                                onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}
+                                                className="px-3 py-2 border rounded-lg text-sm disabled:opacity-60"
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="processing">Processing</option>
+                                                <option value="shipped">Shipped</option>
+                                                <option value="delivered">Delivered</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                            <span className="text-sm text-gray-500">
+                                                {statusSaving ? 'Saving…' : 'Saved automatically'}
+                                            </span>
+                                        </div>
+
+                                        {(selectedOrder.status_history || []).length > 0 && (
+                                            <div className="mt-6">
+                                                <h4 className="font-semibold mb-2">Status history</h4>
+                                                <ul className="space-y-1 text-sm text-gray-600">
+                                                    {selectedOrder.status_history.map((entry, index) => (
+                                                        <li key={index} className="capitalize">
+                                                            {entry.status}
+                                                            {entry.updated_at ? ` · ${new Date(entry.updated_at).toLocaleString()}` : ''}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* User Detail Modal */}
                             {showUserModal && selectedUser && (
                                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -1116,6 +1382,223 @@ const AdminDashboard = () => {
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Analytics Tab */}
+                    {activeTab === 'analytics' && (
+                        <div>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold flex items-center gap-2">
+                                    <BarChart2 className="w-5 h-5 text-harykims-600" />
+                                    Analytics & Traffic
+                                </h2>
+                                <div className="flex items-center gap-3">
+                                    <select
+                                        value={analyticsTimeRange}
+                                        onChange={(e) => setAnalyticsTimeRange(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-harykims-500"
+                                    >
+                                        <option value="7d">Last 7 Days</option>
+                                        <option value="30d">Last 30 Days</option>
+                                        <option value="90d">Last 90 Days</option>
+                                    </select>
+                                    <button
+                                        onClick={loadAnalytics}
+                                        disabled={analyticsLoading}
+                                        className="px-4 py-2 bg-harykims-600 text-white rounded-lg hover:bg-harykims-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${analyticsLoading ? 'animate-spin' : ''}`} />
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Overview Stats */}
+                            {analytics && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-600">Total Visitors</p>
+                                                <p className="text-2xl font-bold text-harykims-600">{analytics.total_visitors?.toLocaleString() || '0'}</p>
+                                            </div>
+                                            <Eye className="w-8 h-8 text-blue-500" />
+                                        </div>
+                                        <div className="mt-2 text-xs text-green-600">
+                                            +{analytics.visitor_change || 0}% from last period
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-600">Page Views</p>
+                                                <p className="text-2xl font-bold">{analytics.total_pageviews?.toLocaleString() || '0'}</p>
+                                            </div>
+                                            <Activity className="w-8 h-8 text-green-500" />
+                                        </div>
+                                        <div className="mt-2 text-xs text-green-600">
+                                            +{analytics.pageview_change || 0}% from last period
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-600">Avg. Session Duration</p>
+                                                <p className="text-2xl font-bold">{analytics.avg_session_duration || '0m 0s'}</p>
+                                            </div>
+                                            <TrendingUp className="w-8 h-8 text-purple-500" />
+                                        </div>
+                                        <div className="mt-2 text-xs text-gray-600">
+                                            {analytics.session_duration_change || 0}% change
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-600">Bounce Rate</p>
+                                                <p className="text-2xl font-bold">{analytics.bounce_rate || '0'}%</p>
+                                            </div>
+                                            <BarChart2 className="w-8 h-8 text-orange-500" />
+                                        </div>
+                                        <div className="mt-2 text-xs text-gray-600">
+                                            {analytics.bounce_rate_change || 0}% change
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Traffic Chart */}
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+                                <div className="p-6 border-b border-gray-100">
+                                    <h3 className="font-semibold text-lg">Traffic Overview</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Daily visitors over the selected time period</p>
+                                </div>
+                                <div className="p-6">
+                                    {analyticsLoading ? (
+                                        <div className="flex justify-center items-center py-12">
+                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-harykims-600"></div>
+                                        </div>
+                                    ) : trafficData.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {trafficData.slice(0, 30).map((day, index) => (
+                                                <div key={index} className="flex items-center gap-4">
+                                                    <span className="w-24 text-sm text-gray-500 font-mono">{day.date}</span>
+                                                    <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-harykims-600 rounded-full transition-all duration-500"
+                                                            style={{ width: `${Math.min((day.visitors / (Math.max(...trafficData.map(d => d.visitors), 1))) * 100, 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="w-16 text-sm font-medium text-gray-900 text-right">{day.visitors}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                            <p>No traffic data available for the selected period.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Sales Analytics */}
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+                                <div className="p-6 border-b border-gray-100">
+                                    <h3 className="font-semibold text-lg">Sales Performance</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Revenue and orders over time</p>
+                                </div>
+                                <div className="p-6">
+                                    {salesData.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {salesData.slice(0, 30).map((day, index) => (
+                                                <div key={index} className="flex items-center gap-4">
+                                                    <span className="w-24 text-sm text-gray-500 font-mono">{day.date}</span>
+                                                    <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-green-500 rounded-full transition-all duration-500"
+                                                            style={{ width: `${Math.min((day.revenue / (Math.max(...salesData.map(d => d.revenue), 1))) * 100, 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="w-24 text-sm font-medium text-gray-900 text-right">{formatPrice(day.revenue)}</span>
+                                                    <span className="w-16 text-sm text-gray-500 text-right">{day.orders} orders</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                            <p>No sales data available for the selected period.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Top Pages / Referrers */}
+                            {analytics && (analytics.top_pages || analytics.top_referrers) && (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {analytics.top_pages && analytics.top_pages.length > 0 && (
+                                        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                            <div className="p-6 border-b border-gray-100">
+                                                <h3 className="font-semibold">Top Pages</h3>
+                                            </div>
+                                            <div className="divide-y divide-gray-100">
+                                                {analytics.top_pages.slice(0, 10).map((page, index) => (
+                                                    <div key={index} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="w-8 text-center text-sm font-medium text-gray-500">#{index + 1}</span>
+                                                            <div>
+                                                                <p className="font-medium text-gray-900 truncate max-w-xs">{page.path}</p>
+                                                                <p className="text-xs text-gray-500">{page.views} views</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-sm text-gray-600">{page.views.toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {analytics.top_referrers && analytics.top_referrers.length > 0 && (
+                                        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                            <div className="p-6 border-b border-gray-100">
+                                                <h3 className="font-semibold">Top Referrers</h3>
+                                            </div>
+                                            <div className="divide-y divide-gray-100">
+                                                {analytics.top_referrers.slice(0, 10).map((ref, index) => (
+                                                    <div key={index} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="w-8 text-center text-sm font-medium text-gray-500">#{index + 1}</span>
+                                                            <div>
+                                                                <p className="font-medium text-gray-900 truncate max-w-xs">{ref.source}</p>
+                                                                <p className="text-xs text-gray-500">{ref.visits} visits</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-sm text-gray-600">{ref.visits.toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {!analytics && !analyticsLoading && (
+                                <div className="text-center py-12 text-gray-500">
+                                    <BarChart2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                    <p>Analytics data not available. Please ensure the backend analytics endpoints are configured.</p>
+                                    <button
+                                        onClick={loadAnalytics}
+                                        className="mt-4 btn-primary"
+                                    >
+                                        Try Loading Analytics
+                                    </button>
                                 </div>
                             )}
                         </div>

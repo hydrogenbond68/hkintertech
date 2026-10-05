@@ -3,29 +3,85 @@ import crypto from 'crypto';
 
 let redisClient;
 let redisConnection;
+let retryAfter = 0;
+let warnedUnavailable = false;
 
 const getRedisUrl = () => process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
+const RETRY_COOLDOWN_MS = 5000;
+const CONNECT_BUDGET_MS = 3000;
+const MAX_CONNECT_ATTEMPTS = 3;
+
+/**
+ * Bounds an operation that must never outlive the caller's request.
+ * Without this, an unreachable Redis leaves connect() pending forever and every
+ * cached read hangs instead of degrading.
+ */
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+      timer.unref?.();
+    }),
+  ]);
+
 const connectRedis = async () => {
   if (redisClient?.isOpen) return redisClient;
+  // An in-flight attempt is a pending Promise, so this also collapses
+  // concurrent callers onto a single connect().
   if (redisConnection) return redisConnection;
 
-  redisClient = createClient({
+  if (Date.now() < retryAfter) return null;
+
+  // A previous client may still be sitting in a failed/closing state.
+  if (redisClient) {
+    redisClient.removeAllListeners();
+    redisClient.disconnect().catch(() => {});
+    redisClient = undefined;
+  }
+
+  const client = createClient({
     url: getRedisUrl(),
     socket: {
-      reconnectStrategy: (retries) => Math.min(retries * 100, 3000),
-      connectTimeout: 5000,
+      // Stop after a few attempts instead of retrying indefinitely: a bounded
+      // strategy lets connect() settle so the caller can degrade gracefully.
+      reconnectStrategy: (retries) => {
+        if (retries >= MAX_CONNECT_ATTEMPTS) {
+          return new Error('Redis reconnect budget exhausted');
+        }
+        return Math.min(retries * 100, 1000);
+      },
+      connectTimeout: 2000,
     },
   });
 
-  redisClient.on('error', (error) => {
+  client.on('error', (error) => {
     console.error('Redis error:', error.message);
   });
 
-  redisConnection = redisClient.connect().catch((error) => {
-    console.error('Redis unavailable; continuing with database fallback:', error.message);
-    return null;
+  client.on('ready', () => {
+    warnedUnavailable = false;
   });
+
+  redisConnection = withTimeout(client.connect(), CONNECT_BUDGET_MS, 'Redis connect')
+    .then(() => client)
+    .catch((error) => {
+      console.error('Redis unavailable; continuing with database fallback:', error.message);
+      if (!warnedUnavailable) {
+        console.warn('[cache] Redis is not reachable. Catalog caching, cross-instance rate limiting, ' +
+          'and the Socket.IO multi-instance adapter are inactive until a connection succeeds.');
+        warnedUnavailable = true;
+      }
+      client.removeAllListeners();
+      client.disconnect().catch(() => {});
+      // Drop the cached attempt so a later call can retry instead of pinning
+      // the failure for the lifetime of the process.
+      redisConnection = undefined;
+      redisClient = undefined;
+      retryAfter = Date.now() + RETRY_COOLDOWN_MS;
+      return null;
+    });
 
   return redisConnection;
 };
@@ -142,8 +198,13 @@ export const closeRedis = async () => {
   if (redisClient?.isOpen) {
     await redisClient.quit().catch(() => redisClient.disconnect());
   }
-  redisClient = null;
-  redisConnection = null;
+  if (redisClient) {
+    redisClient.removeAllListeners();
+    redisClient.disconnect().catch(() => {});
+  }
+  redisClient = undefined;
+  redisConnection = undefined;
+  retryAfter = 0;
 };
 
 export default connectRedis;

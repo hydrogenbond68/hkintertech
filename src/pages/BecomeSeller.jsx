@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Building, Phone, Mail, MapPin, Store, User, CheckCircle } from 'lucide-react';
+import { Building, Phone, Mail, MapPin, Store, CheckCircle } from 'lucide-react';
 
 const BecomeSeller = () => {
     const { user, isAuthenticated } = useAuth();
@@ -48,7 +48,7 @@ const BecomeSeller = () => {
             setTimeout(() => {
                 navigate('/');
             }, 3000);
-        } catch (err) {
+        } catch {
             setError('Failed to submit application. Please try again.');
         } finally {
             setLoading(false);

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Eye, Check, Leaf } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, Check } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { PRODUCT_PLACEHOLDER } from '../../utils/image';
 
 const ProductCard = ({ product }) => {
     const { addToCart } = useCart();
@@ -36,7 +37,7 @@ const ProductCard = ({ product }) => {
     };
 
     const images = getImages();
-    const firstImage = images.length > 0 ? images[0] : '/api/placeholder/400/400';
+    const firstImage = images.length > 0 ? images[0] : PRODUCT_PLACEHOLDER;
     const secondImage = images.length > 1 ? images[1] : firstImage;
 
     const formatPrice = (price) => {
@@ -64,7 +65,7 @@ const ProductCard = ({ product }) => {
                         alt={product.name}
                         className="w-full h-32 sm:h-40 md:h-48 lg:h-44 xl:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
-                            e.target.src = '/api/placeholder/400/400';
+                            e.target.src = PRODUCT_PLACEHOLDER;
                         }}
                     />
                     

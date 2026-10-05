@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { MapPin, Clock, Truck, CheckCircle, Package, Navigation, AlertCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { MapPin, Clock, Truck, CheckCircle, Navigation, AlertCircle } from 'lucide-react';
 import { useSocket } from '../contexts/SocketContext';
 import apiService from '../services/api';
 import MapView from '../components/common/MapView';
@@ -16,7 +15,6 @@ const statusLabels = {
 
 const OrderTracking = () => {
   const { id } = useParams();
-  const { user } = useAuth();
   const { on } = useSocket();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);

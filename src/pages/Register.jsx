@@ -47,7 +47,7 @@ const Register = () => {
             } else {
                 setError(result.error || 'Registration failed');
             }
-        } catch (err) {
+        } catch {
             setError('An error occurred during registration');
         } finally {
             setLoading(false);

@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { verifyToken } from '../config/jwt.js';
 
 // Middleware to protect routes (verify JWT)
 const protect = async (req, res, next) => {
@@ -7,11 +7,8 @@ const protect = async (req, res, next) => {
 
   // Get token from Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-    } catch (error) {
-      return res.status(401).json({ error: 'Not authorized, token failed' });
-    }
+    const [, bearer] = req.headers.authorization.split(' ');
+    token = bearer && bearer.trim();
   }
 
   if (!token) {
@@ -19,7 +16,7 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret');
+    const decoded = verifyToken(token);
     req.user = await User.findById(decoded.id).select('-password');
     
     if (!req.user) {
@@ -35,7 +32,7 @@ const protect = async (req, res, next) => {
     }
     
     next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({ error: 'Not authorized, token failed' });
   }
 };

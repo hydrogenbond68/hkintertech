@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
     User, Mail, Phone, MapPin, Building, 
     Save, Camera, Edit2, 
-    CheckCircle, AlertCircle, Store, Package, Heart, X, RefreshCw
+    CheckCircle, AlertCircle, Store, Package, Heart, X
 } from 'lucide-react';
 
 const Profile = () => {
@@ -67,17 +67,6 @@ const Profile = () => {
                 }));
             };
             reader.readAsDataURL(file);
-        }
-    };
-
-    const handleRemoveImage = () => {
-        setImagePreview(null);
-        setFormData(prev => ({
-            ...prev,
-            profile_image: ''
-        }));
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
         }
     };
 

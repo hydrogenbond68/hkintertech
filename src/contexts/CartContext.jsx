@@ -12,7 +12,7 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { user, isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [carts, setCarts] = useState({});
   const [totalItems, setTotalItems] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);

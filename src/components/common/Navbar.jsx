@@ -6,8 +6,8 @@ import logoImage from '../../assets/logo.jpeg';
 import { 
     Search, ShoppingCart, User, LogOut, LogIn, 
     UserPlus, Menu, X, ChevronDown, Package, 
-    LayoutDashboard, Store, Heart, Leaf, UserCircle,
-    Info, Mail, HelpCircle
+    LayoutDashboard, Store, Heart, UserCircle,
+    Info, Mail
 } from 'lucide-react';
 
 const Navbar = () => {
