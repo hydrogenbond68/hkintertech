@@ -30,6 +30,7 @@ const ProductDetail = () => {
     const [showInquiryForm, setShowInquiryForm] = useState(false);
     const [inWishlist, setInWishlist] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
+    const [lightbox, setLightbox] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
 
     useEffect(() => {
@@ -233,7 +234,7 @@ const ProductDetail = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Product Images Gallery */}
                 <div className="space-y-4">
-                    <div className="bg-gray-100 rounded-xl overflow-hidden">
+                    <div className="bg-gray-100 rounded-xl overflow-hidden cursor-zoom-in" onClick={() => setLightbox(mainImage)}>
                         <img
                             src={mainImage}
                             alt={product.name}
@@ -582,6 +583,28 @@ const ProductDetail = () => {
                     </div>
                 )}
              </div>
+
+            {lightbox && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setLightbox(null)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white text-3xl leading-none"
+                        onClick={() => setLightbox(null)}
+                        aria-label="Close"
+                    >
+                        ×
+                    </button>
+                    <img
+                        src={lightbox}
+                        alt={product.name}
+                        className="max-h-full max-w-full object-contain"
+                        onClick={(e) => e.stopPropagation()}
+                        onError={(e) => { e.target.src = PRODUCT_PLACEHOLDER; }}
+                    />
+                </div>
+            )}
 
             {relatedProducts.length > 0 && (
                 <section className="mt-12 border-t border-gray-200 pt-8">

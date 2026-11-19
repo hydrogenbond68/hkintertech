@@ -55,7 +55,7 @@ const About = () => {
         {
             name: 'Hesus',
             role: 'Strategic Planning & Development',
-            bio: 'Developing Marketing Strategies: Creating comprehensive plans to achieve business objectives (e.g., increasing market share, entering new markets, or launching new products).'
+            bio: 'Creating comprehensive plans to achieve business objectives increasing market share, entering new markets, or launching new products.'
         },
         {
             name: 'Kelvin',
@@ -68,7 +68,7 @@ const About = () => {
             bio: 'Full-stack developer passionate about creating seamless digital experiences.'
         },
         {
-            name: 'Mistaken',
+            name: 'Mr. Ken',
             role: 'Strategic Planning & Development',
             bio: 'Developing Marketing Strategies: Creating comprehensive plans to achieve business objectives (e.g., increasing market share, entering new markets, or launching new products).'
         }
